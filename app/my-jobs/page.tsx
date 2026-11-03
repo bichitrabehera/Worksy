@@ -100,9 +100,20 @@ export default function MyJobsPage() {
               >
                 <CardContent className="px-5">
                   <h3 className="mb-1 text-base font-medium">{job.title}</h3>
-                  <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {job.company}
-                  </p>
+                  {job.companyUrl ? (
+                    <a
+                      href={job.companyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mb-2 block text-sm text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
+                    >
+                      {job.company}
+                    </a>
+                  ) : (
+                    <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+                      {job.company}
+                    </p>
+                  )}
                   <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
                     <span>{job.location.join(", ")}</span>
                     <span>·</span>

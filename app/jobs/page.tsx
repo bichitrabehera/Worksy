@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, Bookmark, Search } from "lucide-react";
@@ -33,7 +34,14 @@ import {
 
 const JOBS_CACHE_TTL = 45 * 60 * 1000;
 
-function getJobsCacheKey(profile: any, page: number, pageSize: number) {
+function getJobsCacheKey(
+  userId: string,
+  profile: any,
+  page: number,
+  pageSize: number,
+  searchQuery: string,
+  filters: { jobType: string; workMode: string },
+) {
   const preferences = {
     desiredJobRoles: profile?.desiredJobRoles ?? [],
     skills: profile?.skills ?? [],
@@ -43,10 +51,11 @@ function getJobsCacheKey(profile: any, page: number, pageSize: number) {
     preferredExperienceLevel: profile?.preferredExperienceLevel ?? "",
   };
 
-  return `jobs-feed:${page}:${pageSize}:${JSON.stringify(preferences)}`;
+  return `jobs-feed:${userId}:${page}:${pageSize}:${searchQuery}:${filters.jobType}:${filters.workMode}:${JSON.stringify(preferences)}`;
 }
 
 export default function JobsPage() {
+  const { user, isLoaded: isUserLoaded } = useUser();
   const [profile, setProfile] = useState<any>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +68,7 @@ export default function JobsPage() {
   const [redirecting, setRedirecting] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const pageSize = 50;
 
   const [filters, setFilters] = useState({
@@ -132,7 +142,7 @@ export default function JobsPage() {
 
   // Matching is performed by the authenticated server route.
   useEffect(() => {
-    if (!profileChecked || redirecting) return;
+    if (!profileChecked || redirecting || !isUserLoaded || !user?.id) return;
 
     let cancelled = false;
 
@@ -141,7 +151,14 @@ export default function JobsPage() {
       setJobsError("");
 
       try {
-        const cacheKey = getJobsCacheKey(profile, page, pageSize);
+        const cacheKey = getJobsCacheKey(
+          user.id,
+          profile,
+          page,
+          pageSize,
+          searchQuery,
+          filters,
+        );
         const cached = sessionStorage.getItem(cacheKey);
 
         if (cached) {
@@ -149,11 +166,13 @@ export default function JobsPage() {
             cachedAt: number;
             jobs: Job[];
             hasMore: boolean;
+            totalCount: number;
           };
 
           if (Date.now() - parsed.cachedAt < JOBS_CACHE_TTL) {
             setSourceJobs(parsed.jobs);
             setHasMore(parsed.hasMore);
+            setTotalCount(parsed.totalCount ?? 0);
             setJobsLoading(false);
             return;
           }
@@ -161,11 +180,20 @@ export default function JobsPage() {
           sessionStorage.removeItem(cacheKey);
         }
 
-        const res = await fetch(`/api/jobs?page=${page}&limit=${pageSize}`, {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(pageSize),
+        });
+        if (searchQuery.trim()) params.set("q", searchQuery.trim());
+        if (filters.jobType) params.set("jobType", filters.jobType);
+        if (filters.workMode) params.set("workMode", filters.workMode);
+
+        const res = await fetch(`/api/jobs?${params.toString()}`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Failed to fetch jobs");
         const result = await res.json();
+        setTotalCount(result.totalCount ?? 0);
 
         if (cancelled) return;
 
@@ -177,6 +205,7 @@ export default function JobsPage() {
             cachedAt: Date.now(),
             jobs: result.jobs ?? [],
             hasMore: Boolean(result.hasMore),
+            totalCount: result.totalCount ?? 0,
           }),
         );
       } catch (error) {
@@ -197,32 +226,19 @@ export default function JobsPage() {
     return () => {
       cancelled = true;
     };
-  }, [profileChecked, profile, retryCount, redirecting, page]);
+  }, [
+    profileChecked,
+    profile,
+    retryCount,
+    redirecting,
+    page,
+    isUserLoaded,
+    user?.id,
+    searchQuery,
+    filters,
+  ]);
 
-  // Search and display filters are client-side; matching is server-side.
-  const jobs = sourceJobs
-    .filter((job) => {
-      if (!searchQuery.trim()) return true;
-
-      const q = searchQuery.toLowerCase();
-
-      return (
-        job.title?.toLowerCase().includes(q) ||
-        job.company?.toLowerCase().includes(q)
-      );
-    })
-    .filter((job) => {
-      if (filters.jobType && job.jobType !== filters.jobType) {
-        return false;
-      }
-
-      if (filters.workMode && job.workMode !== filters.workMode) {
-        return false;
-      }
-
-      return true;
-    })
-    .sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0));
+  const jobs = sourceJobs;
 
   // Save or unsave a job.
   const toggleSave = async (id: string) => {
@@ -288,19 +304,23 @@ export default function JobsPage() {
             <InputGroupInput
               placeholder="Search jobs or companies..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setPage(1);
+                setSearchQuery(e.target.value);
+              }}
             />
           </InputGroup>
 
           <div className="flex gap-2">
             <Select
               value={filters.jobType}
-              onValueChange={(value) =>
+              onValueChange={(value) => {
                 setFilters((prev) => ({
                   ...prev,
                   jobType: value ?? "",
-                }))
-              }
+                }));
+                setPage(1);
+              }}
             >
               <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-sm">
                 <SelectValue placeholder="Job type" />
@@ -319,12 +339,13 @@ export default function JobsPage() {
 
             <Select
               value={filters.workMode}
-              onValueChange={(value) =>
+              onValueChange={(value) => {
                 setFilters((prev) => ({
                   ...prev,
                   workMode: value ?? "",
-                }))
-              }
+                }));
+                setPage(1);
+              }}
             >
               <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-sm">
                 <SelectValue placeholder="Work mode" />
@@ -342,10 +363,15 @@ export default function JobsPage() {
           </div>
         </div>
 
-        {/* Results count */}
         {!jobsLoading && !jobsError && (
           <p className="text-xs text-zinc-500 mb-4">
-            {jobs.length} opportunities found
+            {totalCount} opportunities available
+            {totalCount > 0 && (
+              <>
+                {" "}
+                · Page {page} of {Math.ceil(totalCount / pageSize)}
+              </>
+            )}
           </p>
         )}
 
@@ -411,9 +437,20 @@ export default function JobsPage() {
                             {job.title}
                           </h3>
 
-                          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                            {job.company}
-                          </p>
+                          {job.companyUrl ? (
+                            <a
+                              href={job.companyUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
+                            >
+                              {job.company}
+                            </a>
+                          ) : (
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                              {job.company}
+                            </p>
+                          )}
                         </div>
 
                         <Button

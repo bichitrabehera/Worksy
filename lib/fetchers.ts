@@ -20,6 +20,19 @@ const asNumber = (value: unknown): number | undefined => {
   return Number.isFinite(number) ? number : undefined;
 };
 
+const asUrl = (value: unknown): string | undefined => {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const isIndiaEligible = (location = "") => {
   const value = location.toLowerCase();
 
@@ -95,6 +108,7 @@ export async function fetchRemotive(query: JobQuery): Promise<Job[]> {
         id: `remotive-${job.id}`,
         title: job.title ?? "Untitled role",
         company: job.company_name ?? "Unknown company",
+        companyUrl: asUrl(job.company_url ?? job.company_website),
         location: [job.candidate_required_location || "Remote"],
         description: stripHtml(job.description ?? ""),
         requirements: stripHtml(job.requirements ?? ""),
@@ -176,6 +190,7 @@ export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
         id: `himalayas-${job.guid}`,
         title: job.title ?? "Untitled role",
         company: job.companyName ?? "Unknown company",
+        companyUrl: asUrl(job.companyWebsite ?? job.companyUrl ?? job.company_url),
         location: [
           job.locationRestrictions?.length
             ? job.locationRestrictions.join(", ")
@@ -223,6 +238,7 @@ export async function fetchRemoteOK(query: JobQuery): Promise<Job[]> {
       id: `remoteok-${job.id}`,
       title: job.position ?? "Untitled role",
       company: job.company ?? "Unknown company",
+      companyUrl: asUrl(job.company_url ?? job.company_url_or_website),
       description: stripHtml(job.description ?? ""),
       jobType: getJobType(job.tags),
       workMode: "Remote",
@@ -287,6 +303,7 @@ export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
         id: `jobicy-${job.id}`,
         title: job.jobTitle ?? "Untitled role",
         company: job.companyName ?? "Unknown company",
+        companyUrl: asUrl(job.companyWebsite ?? job.companyUrl ?? job.company_url),
         location: [job.jobGeo || "Worldwide Remote"],
         description: stripHtml(job.jobDescription ?? job.jobExcerpt ?? ""),
         requirements: stripHtml(job.jobRequirements ?? ""),

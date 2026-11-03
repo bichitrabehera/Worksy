@@ -159,24 +159,21 @@ export async function GET(req: NextRequest) {
     // 2. Read pagination parameters.
     const sp = req.nextUrl.searchParams;
 
-    const requestedLimit = Number(sp.get("limit") ?? 12);
     const requestedPage = Number(sp.get("page") ?? 1);
 
-    const pageSize = Number.isFinite(requestedLimit)
-      ? Math.min(Math.max(Math.floor(requestedLimit), 1), 50)
-      : 12;
-
-    const page = Number.isFinite(requestedPage)
-      ? Math.min(Math.max(Math.floor(requestedPage), 1), 100)
-      : 1;
+    const page = Math.max(1, Number(sp.get("page")) || 1);
+    const pageSize = Math.min(50, Math.max(1, Number(sp.get("limit")) || 50));
 
     // 3. Build job query.
+    const searchQuery = sp.get("q")?.trim().toLowerCase() || "";
     const query: JobQuery = {
-      q: sp.get("q")?.trim() || "",
+      q: "",
       where: sp.get("where") ?? "India",
       remoteOnly: true,
       limit: 50,
     };
+    const jobType = sp.get("jobType")?.trim().toLowerCase() || "";
+    const workMode = sp.get("workMode")?.trim().toLowerCase() || "";
 
     // 4. Build a Redis key unique to this user.
     const cacheKey = getCacheKey(userId, query);
@@ -206,21 +203,57 @@ export async function GET(req: NextRequest) {
     }
 
     // 8. Apply pagination after matching and ranking.
-    const allJobs = result.jobs;
+    const allJobs = result.jobs.filter((job) => {
+      const searchableText = [
+        job.title,
+        job.company,
+        job.description,
+        job.requirements,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch = !searchQuery || searchableText.includes(searchQuery);
+      const matchesJobType =
+        !jobType || job.jobType?.trim().toLowerCase() === jobType;
+      const matchesWorkMode =
+        !workMode || job.workMode?.trim().toLowerCase() === workMode;
+
+      return matchesSearch && matchesJobType && matchesWorkMode;
+    });
 
     const start = (page - 1) * pageSize;
 
     const finalJobs = allJobs.slice(start, start + pageSize);
 
     // 9. Return personalized jobs.
+
+    // 9. Calculate counts for the complete job collection.
+    const totalCount = allJobs.length;
+
+    // All jobs are retained; matching scores only determine ranking.
+    const matchedCount = allJobs.length;
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // 10. Return only the requested page.
     return NextResponse.json(
       {
         jobs: finalJobs,
+
+        // Current page information
         count: finalJobs.length,
-        totalCount: allJobs.length,
         page,
         pageSize,
-        hasMore: start + pageSize < allJobs.length,
+        hasMore: start + pageSize < totalCount,
+
+        // Complete collection information
+        totalCount,
+        matchedCount,
+        totalPages,
+
+        // Provider information
         sources: result.sources,
         errors: result.errors.length ? result.errors : undefined,
       },
