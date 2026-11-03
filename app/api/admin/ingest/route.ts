@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { jobs } from "@/db/schema";
 import jobsData from "@/data/jobs.json";
-import { sql } from "drizzle-orm";
+import { prisma } from "@/lib/prisma";
 
 function normalize(s: string) {
   return s.toLowerCase().trim().replace(/\s+/g, " ");
@@ -25,9 +23,8 @@ export async function POST() {
       const applyUrlNormalized = normalize(j.apply_url);
       const dedupKey = makeDedupKey(j.company, j.title, j.location || [], j.apply_url);
       try {
-        await db
-          .insert(jobs)
-          .values({
+        await prisma.job.create({
+          data: {
             source: j.source,
             sourceJobId: j.source_job_id,
             title: j.title,
@@ -48,11 +45,17 @@ export async function POST() {
             postedDate: j.posted_date ? new Date(j.posted_date) : null,
             isActive: true,
             dedupKey,
-          })
-          .onConflictDoNothing();
+          },
+        });
         inserted++;
-      } catch (e) {
-        // ignore duplicates
+      } catch (error) {
+        const code =
+          typeof error === "object" && error !== null && "code" in error
+            ? error.code
+            : undefined;
+        if (code !== "P2002") {
+          throw error;
+        }
       }
     }
     return NextResponse.json({ ok: true, inserted });

@@ -1,0 +1,218 @@
+datasource db {
+    provider = "postgresql"
+}
+
+generator client {
+    provider = "prisma-client"
+    output   = "./generated"
+}
+
+// --------------------------------------------------
+// USER
+// --------------------------------------------------
+
+model User {
+    id           String  @id @default(uuid()) @db.Uuid
+    clerkId      String? @unique @map("clerk_id") @db.VarChar(255)
+    email        String  @unique @db.VarChar(255)
+    name         String? @db.VarChar(255)
+    firstName    String? @map("first_name") @db.VarChar(255)
+    lastName     String? @map("last_name") @db.VarChar(255)
+    imageUrl     String? @map("image_url")
+    authProvider String? @default("google") @map("auth_provider") @db.VarChar(50)
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+    profile     Profile?
+    jobMatches  JobMatch[]
+    jobStatuses UserJobStatus[]
+    savedJobs   SavedJob[]
+
+    @@map("users")
+}
+
+// --------------------------------------------------
+// PROFILE
+// --------------------------------------------------
+
+model Profile {
+    id     String @id @default(uuid()) @db.Uuid
+    userId String @unique @map("user_id") @db.Uuid
+
+    // Basic profile
+    fullName        String? @map("full_name") @db.VarChar(255)
+    email           String? @db.VarChar(255)
+    phoneNumber     String? @map("phone_number") @db.VarChar(50)
+    currentLocation String? @map("current_location") @db.VarChar(255)
+
+    // Education
+    qualification  String? @db.VarChar(100)
+    college        String? @db.VarChar(255)
+    university     String? @db.VarChar(255)
+    degree         String? @db.VarChar(255)
+    fieldOfStudy   String? @map("field_of_study") @db.VarChar(255)
+    major          String? @db.VarChar(255)
+    graduationYear Int?    @map("graduation_year")
+
+    experienceLevel String? @map("experience_level") @db.VarChar(50)
+
+    skills    Json    @default("[]") @db.JsonB
+    resumeUrl String? @map("resume_url")
+
+    // Job preferences
+    desiredJobRoles Json @default("[]") @map("desired_job_roles") @db.JsonB
+    preferredRoles  Json @default("[]") @map("preferred_roles") @db.JsonB
+
+    jobTypes          Json @default("[]") @map("job_types") @db.JsonB
+    jobTypePreference Json @default("[\"Full-time\"]") @map("job_type_preference") @db.JsonB
+
+    preferredLocations Json    @default("[]") @map("preferred_locations") @db.JsonB
+    locationPreference String? @map("location_preference") @db.VarChar(50)
+
+    workMode Json @default("[]") @map("work_mode") @db.JsonB
+
+    // Expected compensation in LPA
+    expectedSalaryMin Int? @map("expected_salary_min")
+    expectedSalaryMax Int? @map("expected_salary_max")
+
+    // Legacy salary fields
+    salaryMin Int? @map("salary_min")
+    salaryMax Int? @map("salary_max")
+
+    preferredExperienceLevel String? @map("preferred_experience_level") @db.VarChar(50)
+
+    companyTypePreference Json @default("[]") @map("company_type_preference") @db.JsonB
+    industryPreference    Json @default("[]") @map("industry_preference") @db.JsonB
+
+    availability String? @db.VarChar(50)
+
+    projects Json @default("[]") @db.JsonB
+
+    resumeParsedAt DateTime? @map("resume_parsed_at") @db.Timestamp(6)
+
+    onboardingCompleted Boolean @default(false) @map("onboarding_completed")
+    onboardingStep      Int?    @default(0) @map("onboarding_step")
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("profiles")
+}
+
+// --------------------------------------------------
+// JOBS
+// --------------------------------------------------
+
+model Job {
+    id                String @id @default(uuid()) @db.Uuid
+    source            String @db.VarChar(50)
+    sourceJobId       String @map("source_job_id") @db.VarChar(255)
+    title             String
+    company           String
+    companyNormalized String @map("company_normalized") @db.VarChar(255)
+
+    location           Json @db.JsonB
+    locationNormalized Json @map("location_normalized") @db.JsonB
+
+    description  String
+    requirements String?
+
+    jobType            String? @map("job_type") @db.VarChar(50)
+    workMode           String? @map("work_mode") @db.VarChar(50)
+    experienceRequired String? @map("experience_required") @db.VarChar(100)
+
+    salaryRange String? @map("salary_range") @db.VarChar(100)
+    salaryMin   Int?    @map("salary_min")
+    salaryMax   Int?    @map("salary_max")
+
+    applyUrl           String @map("apply_url")
+    applyUrlNormalized String @map("apply_url_normalized")
+
+    postedDate DateTime? @map("posted_date") @db.Timestamp(6)
+    fetchedAt  DateTime  @default(now()) @map("fetched_at") @db.Timestamp(6)
+    expiresAt  DateTime? @map("expires_at") @db.Timestamp(6)
+
+    isActive Boolean @default(true) @map("is_active")
+
+    dedupKey String @unique @map("dedup_key") @db.VarChar(512)
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+    jobMatches  JobMatch[]
+    jobStatuses UserJobStatus[]
+    savedBy     SavedJob[]
+
+    @@map("jobs")
+}
+
+// --------------------------------------------------
+// JOB MATCHES
+// --------------------------------------------------
+
+model JobMatch {
+    id     String @id @default(uuid()) @db.Uuid
+    userId String @map("user_id") @db.Uuid
+    jobId  String @map("job_id") @db.Uuid
+
+    matchScore     Int   @map("match_score")
+    scoreBreakdown Json? @map("score_breakdown") @db.JsonB
+    matchReasons   Json  @default("[]") @map("match_reasons") @db.JsonB
+
+    viewed   Boolean   @default(false)
+    viewedAt DateTime? @map("viewed_at") @db.Timestamp(6)
+
+    clicked   Boolean   @default(false)
+    clickedAt DateTime? @map("clicked_at") @db.Timestamp(6)
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@map("job_matches")
+}
+
+// --------------------------------------------------
+// USER JOB STATUS
+// --------------------------------------------------
+
+model UserJobStatus {
+    id     String @id @default(uuid()) @db.Uuid
+    userId String @map("user_id") @db.Uuid
+    jobId  String @map("job_id") @db.Uuid
+
+    status          String   @db.VarChar(50)
+    notes           String?
+    statusChangedAt DateTime @default(now()) @map("status_changed_at") @db.Timestamp(6)
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, jobId])
+    @@map("user_job_status")
+}
+
+// --------------------------------------------------
+// SAVED JOBS
+// --------------------------------------------------
+
+model SavedJob {
+    id     String @id @default(uuid()) @db.Uuid
+    userId String @map("user_id") @db.Uuid
+    jobId  String @map("job_id") @db.Uuid
+
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, jobId])
+    @@map("saved_jobs")
+}

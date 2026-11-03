@@ -359,7 +359,7 @@ Generate 2-3 human-readable reasons:
 - **Backend:** Next.js API routes or tRPC
 - **Auth:** NextAuth.js v5 or Clerk
 - **Database:** PostgreSQL (Supabase/Neon)
-- **ORM:** Prisma or Drizzle
+- **ORM:** Prisma
 - **File Storage:** Supabase Storage or Vercel Blob
 - **Job Queue:** Inngest or Vercel Cron
 - **Parsing:** pdf-parse, mammoth (for DOCX)

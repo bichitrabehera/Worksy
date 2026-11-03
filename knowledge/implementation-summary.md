@@ -25,16 +25,16 @@
   - `app/api/admin/ingest/route.ts` - Admin endpoint to ingest mock jobs
 
 ### Step 3: Setup DB, Auth & Schema
-- **Database Schema** (Drizzle ORM): `db/schema.ts`
+- **Database Schema** (Prisma): `prisma/schema.prisma`
   - `users` - User accounts
   - `profiles` - Education, skills, projects, preferences
   - `jobs` - Job postings with normalization & deduplication
   - `job_matches` - Scoring and match reasons
   - `user_job_status` - Save/apply/tracking
-- **DB Connection**: `db/index.ts` with postgres.js
-- **Auth**: `auth.ts` with NextAuth v5 (Auth.js), Google OAuth + Credentials provider, Drizzle adapter
+- **DB Connection**: `lib/prisma.ts` with Prisma's Neon-compatible PostgreSQL adapter
+- **Auth**: Clerk authentication with Google OAuth
 - **Middleware**: `middleware.ts` for route protection
-- **Config**: `drizzle.config.ts`, `.env.example`
+- **Config**: `prisma.config.ts`, `.env.example`
 
 ### Step 4: Build Vertical Slice
 - **Onboarding** (`app/onboarding/page.tsx`): 3-step guided form
@@ -62,13 +62,13 @@
 
 ### Step 5: Admin Ingest (Optional DB Loading)
 - `app/api/admin/ingest/route.ts` - POST to load mock jobs into DB with normalization and deduplication
-- Works with Drizzle schema, can be used if switching from localStorage to DB
+- Works with the Prisma schema and Neon database
 
 ## Tech Stack (Free)
 - **Framework**: Next.js 16 (App Router, TypeScript)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Auth**: NextAuth.js v5 (Auth.js) - free
-- **Database**: Drizzle ORM + Postgres (Neon/Supabase free tier) - schema ready
+- **Database**: Prisma + PostgreSQL on Neon
 - **Data**: Mock JSON (no scraping, completely free)
 - **Storage**: localStorage for MVP (profile & saved jobs)
 

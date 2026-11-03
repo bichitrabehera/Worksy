@@ -1,28 +1,142 @@
 "use client";
 
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { Bookmark, LogOut, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu";
+import Loader from "@/components/ui/loader";
+import { cn } from "@/lib/utils";
+
+const links = [
+  { href: "/jobs", label: "Jobs" },
+  { href: "/my-jobs", label: "Saved Jobs" },
+];
+
+function getInitials(name?: string | null) {
+  if (!name) return "U";
+
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("");
+}
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+
+  const initials = getInitials(
+    user?.fullName || user?.primaryEmailAddress?.emailAddress,
+  );
+
   return (
-    <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="text-base font-semibold tracking-tight">
-          JobSearch
-        </Link>
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/jobs" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-            Jobs
+    <header className="sticky top-0 z-50 bg-background/10 backdrop-blur">
+      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center gap-6">
+          <Link
+            href="/"
+            className="text-brand font-[copper] text-xl font-semibold"
+          >
+            Worksy
           </Link>
-          <Link href="/my-jobs" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-            Saved
-          </Link>
-          <Link href="/profile" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-            Profile
-          </Link>
+        </div>
+
+        <nav className="hidden items-center justify-center gap-6 md:flex">
+          {links.map((link) => {
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm hover:text-neutral-500"
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
-        <div className="flex items-center">
-          <UserButton />
+        <div className="flex items-center justify-center gap-4">
+          {!isLoaded ? (
+            <Loader className="size-8" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                aria-label="Open account menu"
+              >
+                <div className="flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium text-foreground hover:text-neutral-500">
+                  {user.fullName || "Your account"}
+                  <Avatar>
+                    <AvatarImage
+                      src={user.imageUrl}
+                      alt={user.fullName ?? "Profile"}
+                    />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-48">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium text-foreground"></span>
+                    <span className="truncate text-xs font-normal">
+                      {user.primaryEmailAddress?.emailAddress}
+                    </span>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem render={<Link href="/profile" />}>
+                  <User />
+                  Profile
+                </DropdownMenuItem>
+
+                <DropdownMenuItem render={<Link href="/my-jobs" />}>
+                  <Bookmark />
+                  Saved jobs
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => signOut({ redirectUrl: "/" })}
+                >
+                  <LogOut />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className={buttonVariants({ variant: "ghost", size: "lg" })}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/sign-up"
+                className={cn(buttonVariants({ size: "lg" }), "hidden sm:flex")}
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
