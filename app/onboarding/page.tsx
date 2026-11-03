@@ -160,7 +160,7 @@ export default function OnboardingPage() {
     degree: "",
     fieldOfStudy: "",
     major: "",
-    graduationYear: new Date().getFullYear(),
+    graduationYear: 0,
 
     experienceLevel: "",
 
@@ -178,6 +178,13 @@ export default function OnboardingPage() {
   // --------------------------------------------------
   // CLERK USER SYNC
   // --------------------------------------------------
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      graduationYear: new Date().getFullYear(),
+    }));
+  }, []);
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -254,7 +261,7 @@ export default function OnboardingPage() {
       (form.college.trim() &&
         form.degree &&
         form.major &&
-        form.graduationYear)),
+        form.graduationYear > 0)),
   );
 
   const canProceedStep2 =

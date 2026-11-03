@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { connection } from "next/server";
 
 import redis from "@/lib/redis";
 import {
@@ -148,6 +149,7 @@ async function fetchUserJobs(
 }
 
 export async function GET(req: NextRequest) {
+  await connection();
   try {
     // 1. Authenticate using Clerk.
     const { userId } = await auth();
@@ -214,7 +216,8 @@ export async function GET(req: NextRequest) {
         .join(" ")
         .toLowerCase();
 
-      const matchesSearch = !searchQuery || searchableText.includes(searchQuery);
+      const matchesSearch =
+        !searchQuery || searchableText.includes(searchQuery);
       const matchesJobType =
         !jobType || job.jobType?.trim().toLowerCase() === jobType;
       const matchesWorkMode =

@@ -18,7 +18,6 @@ export function BookmarkToggle({
   return (
     <Toggle
       variant="outline"
-      size="icon-sm"
       pressed={saved}
       onPressedChange={onToggle}
       aria-label={saved ? "Remove from saved jobs" : "Save job"}

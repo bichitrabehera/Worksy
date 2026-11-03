@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Bookmark, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,7 +34,6 @@ function getInitials(name?: string | null) {
 }
 
 export default function Navbar() {
-  const pathname = usePathname();
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
 
