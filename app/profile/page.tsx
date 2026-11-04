@@ -40,11 +40,7 @@ import {
 } from "@/lib/profile-options";
 
 type ArrayField =
-  | "skills"
-  | "desiredJobRoles"
-  | "jobTypes"
-  | "preferredLocations"
-  | "workMode";
+  "skills" | "desiredJobRoles" | "jobTypes" | "preferredLocations" | "workMode";
 
 type Profile = {
   fullName?: string;
@@ -76,13 +72,14 @@ const EMPTY_PROFILE: Profile = {
 };
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [initialProfile, setInitialProfile] = useState<Profile>(EMPTY_PROFILE);
 
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [profileRetry, setProfileRetry] = useState(0);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
@@ -91,19 +88,44 @@ export default function ProfilePage() {
   useEffect(() => {
     let active = true;
 
+    // Wait until Clerk has restored the session before calling the API. A
+    // request fired too early can miss the session cookie and return 401.
+    if (!isLoaded) {
+      return;
+    }
+
+    if (!isSignedIn) {
+      setLoadingProfile(false);
+      return;
+    }
+
     const loadProfile = async () => {
       try {
-        const response = await fetch("/api/user/sync");
+        let response = await fetch("/api/user/sync", { cache: "no-store" });
 
-        if (!response.ok) {
-          throw new Error("Failed to load profile.");
+        // Retry once on transient failures (for example, the session cookie
+        // still settling right after sign-in).
+        if (
+          !response.ok &&
+          (response.status === 401 || response.status >= 500)
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          response = await fetch("/api/user/sync", { cache: "no-store" });
         }
 
-        const data = await response.json();
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(
+            response.status === 401
+              ? "Your session expired. Please sign in again."
+              : (data?.error ?? "Unable to load your profile."),
+          );
+        }
 
         if (!active) return;
 
-        const savedProfile = data.user?.profile;
+        const savedProfile = data?.user?.profile;
 
         if (savedProfile) {
           const normalized: Profile = {
@@ -131,7 +153,11 @@ export default function ProfilePage() {
         }
       } catch (err) {
         console.error(err);
-        if (active) setError("Unable to load your profile.");
+        if (active) {
+          setError(
+            err instanceof Error ? err.message : "Unable to load your profile.",
+          );
+        }
       } finally {
         if (active) setLoadingProfile(false);
       }
@@ -142,7 +168,7 @@ export default function ProfilePage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isLoaded, isSignedIn, profileRetry]);
 
   const updateField = (field: string, value: string) => {
     setProfile((prev) => ({
@@ -260,11 +286,11 @@ export default function ProfilePage() {
     field: string,
   ) => (
     <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-muted-foreground text-xs">{label}</Label>
       <Input
         value={value ?? ""}
         disabled={!editing}
-        className="h-9"
+        className="h-9 text-sm"
         onChange={(event) => updateField(field, event.target.value)}
       />
     </div>
@@ -277,13 +303,13 @@ export default function ProfilePage() {
     field: string,
   ) => (
     <div className="space-y-2">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Label className="text-muted-foreground text-xs">{label}</Label>
       <Select
         value={value === undefined ? "" : String(value)}
         onValueChange={(nextValue) => updateField(field, nextValue ?? "")}
         disabled={!editing}
       >
-        <SelectTrigger className="h-9 w-full">
+        <SelectTrigger className="h-9 w-full text-sm">
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>
@@ -308,22 +334,24 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight font-[copper]">Profile</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-[copper] text-2xl font-semibold tracking-tight">
+            Profile
+          </h1>
+          <p className="text-muted-foreground text-sm">
             Manage your personal information and job preferences.
           </p>
         </div>
 
         {!editing ? (
-          <Button
-            size="sm"
+          <button
             onClick={() => {
               setError("");
               setEditing(true);
             }}
+            className="bg-brand text-background hover:bg-brand/90 focus-visible:ring-ring/50 flex-inline w-fit rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:ring-3 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             Edit profile
-          </Button>
+          </button>
         ) : (
           <div className="flex gap-2">
             <Button
@@ -345,9 +373,21 @@ export default function ProfilePage() {
       {error && (
         <div
           role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          className="border-destructive/30 bg-destructive/5 text-destructive flex flex-col gap-3 rounded-lg border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
         >
-          {error}
+          <span>{error}</span>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setError("");
+              setLoadingProfile(true);
+              setProfileRetry((count) => count + 1);
+            }}
+          >
+            Try again
+          </Button>
         </div>
       )}
 
@@ -360,16 +400,16 @@ export default function ProfilePage() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Full name</Label>
+              <Label className="text-muted-foreground text-xs">Full name</Label>
               <Input
                 value={profile.fullName || user?.fullName || ""}
                 disabled
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-muted-foreground text-xs">
                 Email address
               </Label>
               <Input
@@ -377,13 +417,13 @@ export default function ProfilePage() {
                   profile.email || user?.primaryEmailAddress?.emailAddress || ""
                 }
                 disabled
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-2">
               <Label
-                className="text-xs text-muted-foreground"
+                className="text-muted-foreground text-xs"
                 htmlFor="phoneNumber"
               >
                 Phone number
@@ -394,14 +434,14 @@ export default function ProfilePage() {
                 disabled={!editing}
                 onChange={(e) => updateField("phoneNumber", e.target.value)}
                 placeholder="Enter phone number"
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
 
             <div className="space-y-2">
               <Label
                 htmlFor="currentLocation"
-                className="text-xs text-muted-foreground"
+                className="text-muted-foreground text-xs"
               >
                 Current location
               </Label>
@@ -411,7 +451,7 @@ export default function ProfilePage() {
                 disabled={!editing}
                 onChange={(e) => updateField("currentLocation", e.target.value)}
                 placeholder="City, State"
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
           </div>
@@ -467,7 +507,7 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-medium">Desired roles</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Select the roles you want to work in.
               </p>
             </div>
@@ -480,7 +520,7 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-medium">Job type</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Select your preferred employment types.
               </p>
             </div>
@@ -493,7 +533,7 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-medium">Work mode</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Where would you prefer to work?
               </p>
             </div>
@@ -506,7 +546,7 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-medium">Preferred locations</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Select the cities where you are open to working.
               </p>
             </div>
@@ -519,7 +559,7 @@ export default function ProfilePage() {
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-medium">Skills</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Select your technical and professional skills.
               </p>
             </div>
@@ -544,14 +584,14 @@ export default function ProfilePage() {
 
       <Card className="border-destructive/40">
         <CardHeader>
-          <CardTitle className="text-base text-destructive">
+          <CardTitle className="text-destructive text-base">
             Danger zone
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium">Delete account</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Permanently delete your account, profile, saved jobs, and
               application data.
             </p>

@@ -1,11 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import {
+  Banknote,
+  Bookmark,
+  Briefcase,
+  CheckCircle2,
+  ExternalLink,
+  Laptop,
+  MapPin,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, Bookmark, Search } from "lucide-react";
+import { CompanyAvatar } from "@/components/company-avatar";
 import type { Job } from "@/lib/types";
+import { formatJobDate, formatSalary, matchTone } from "@/lib/job-display";
+import { encodeJobId } from "@/lib/job-id";
+import {
+  fetchSavedJobIds,
+  readSavedJobIds,
+  removeJobFromServer,
+  saveJobToServer,
+  writeSavedJobIds,
+} from "@/lib/saved-jobs";
+import { cn } from "@/lib/utils";
 import Loader from "@/components/ui/loader";
 import {
   Pagination,
@@ -62,6 +83,7 @@ function getJobsCacheKey(
 }
 
 export default function JobsPage() {
+  const router = useRouter();
   const { user, isLoaded: isUserLoaded } = useUser();
   const [profile, setProfile] = useState<any>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -83,8 +105,31 @@ export default function JobsPage() {
     workMode: "",
   });
 
+  // Tracks whether the user changed the saved list while the initial API sync
+  // was in flight, so a stale response cannot resurrect a removed bookmark.
+  const savedChangedRef = useRef(false);
+
+  const openJob = (job: Job) => {
+    router.push(`/jobs/${encodeJobId(job.id)}`);
+  };
+
   // Load user profile and saved jobs.
   useEffect(() => {
+    // Show the cached saved list immediately, then replace it with the server
+    // list so removals from other pages are reflected here.
+    setSaved(readSavedJobIds());
+
+    void fetchSavedJobIds()
+      .then((databaseSaved) => {
+        if (savedChangedRef.current) return;
+
+        setSaved(databaseSaved);
+        writeSavedJobIds(databaseSaved);
+      })
+      .catch((error) => {
+        console.error("Saved jobs loading failed:", error);
+      });
+
     const loadUserData = async () => {
       try {
         const res = await fetch("/api/user/sync", {
@@ -107,36 +152,6 @@ export default function JobsPage() {
             return;
           }
         }
-
-        // Load saved jobs from localStorage.
-        const localSaved: string[] = JSON.parse(
-          localStorage.getItem("savedJobs") || "[]",
-        );
-
-        setSaved(localSaved);
-
-        // Sync saved jobs in the background so it does not delay the feed.
-        void fetch("/api/saved")
-          .then(async (savedRes) => {
-            if (!savedRes.ok) return;
-
-            const savedData = await savedRes.json();
-            const databaseJobs = savedData.jobs ?? savedData.savedJobs ?? [];
-            const databaseSaved: string[] = databaseJobs
-              .map((item: any) =>
-                typeof item === "string"
-                  ? item
-                  : (item.sourceJobId ?? item.source_job_id),
-              )
-              .filter(Boolean);
-            const mergedSaved = [...new Set([...localSaved, ...databaseSaved])];
-
-            setSaved(mergedSaved);
-            localStorage.setItem("savedJobs", JSON.stringify(mergedSaved));
-          })
-          .catch((error) => {
-            console.error("Saved jobs loading failed:", error);
-          });
       } catch (error) {
         console.error("User data loading failed:", error);
       } finally {
@@ -250,36 +265,32 @@ export default function JobsPage() {
   // Save or unsave a job.
   const toggleSave = async (id: string) => {
     const isSaved = saved.includes(id);
+    const previous = saved;
 
     const newSaved = isSaved
       ? saved.filter((item) => item !== id)
       : [...saved, id];
 
+    savedChangedRef.current = true;
     setSaved(newSaved);
-
-    localStorage.setItem("savedJobs", JSON.stringify(newSaved));
+    writeSavedJobIds(newSaved);
 
     try {
-      const res = await fetch("/api/saved", {
-        method: isSaved ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sourceJobId: id,
-          job: sourceJobs.find((job) => job.id === id),
-        }),
-      });
+      if (isSaved) {
+        await removeJobFromServer(id);
+      } else {
+        const job = sourceJobs.find((item) => item.id === id);
 
-      if (!res.ok) {
-        throw new Error("Failed to update saved job");
+        if (!job) throw new Error("Job not found");
+
+        await saveJobToServer(job);
       }
     } catch (error) {
       console.error("Saving job failed:", error);
 
       // Restore previous state if the API request fails.
-      setSaved(saved);
-      localStorage.setItem("savedJobs", JSON.stringify(saved));
+      setSaved(previous);
+      writeSavedJobIds(previous);
     }
   };
 
@@ -289,10 +300,10 @@ export default function JobsPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Page heading */}
         <div className="mb-8">
-          <h1 className="text-2xl font-[copper] font-semibold tracking-tight mb-2">
+          <h1 className="mb-2 font-[copper] text-2xl font-semibold tracking-tight">
             Jobs
           </h1>
 
@@ -302,7 +313,7 @@ export default function JobsPage() {
         </div>
 
         {/* Search and filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row">
           <InputGroup>
             <InputGroupAddon>
               <Search className="h-4 w-4 text-zinc-400" />
@@ -329,7 +340,7 @@ export default function JobsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-sm">
+              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-black">
                 <SelectValue placeholder="Job type" />
               </SelectTrigger>
 
@@ -354,7 +365,7 @@ export default function JobsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black text-sm">
+              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-black">
                 <SelectValue placeholder="Work mode" />
               </SelectTrigger>
 
@@ -371,7 +382,7 @@ export default function JobsPage() {
         </div>
 
         {!jobsLoading && !jobsError && (
-          <p className="text-xs text-zinc-500 mb-4">
+          <p className="mb-4 text-xs text-zinc-500">
             {totalCount} opportunities available
             {totalCount > 0 && (
               <>
@@ -383,7 +394,7 @@ export default function JobsPage() {
         )}
 
         {/* Job listings */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {jobsLoading && (
             <Card className="col-span-full border-zinc-200 dark:border-zinc-800">
               <CardContent className="p-12 text-center">
@@ -421,7 +432,7 @@ export default function JobsPage() {
                   No jobs found matching your preferences.
                 </p>
 
-                <p className="text-xs text-zinc-500 mt-2">
+                <p className="mt-2 text-xs text-zinc-500">
                   Try changing your search or filters.
                 </p>
               </CardContent>
@@ -430,126 +441,135 @@ export default function JobsPage() {
 
           {!jobsLoading &&
             !jobsError &&
-            jobs.map((job) => (
-              <Card
-                key={job.id}
-                className="border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
-              >
-                <CardContent className="px-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-medium text-base mb-1">
-                            {job.title}
-                          </h3>
+            jobs.map((job) => {
+              const isSaved = saved.includes(job.id);
+              const salary = formatSalary(job);
+              const postedAt = formatJobDate(job.postedAt);
+              const reasons = job.match?.reasons ?? [];
 
-                          {job.companyUrl ? (
-                            <a
-                              href={job.companyUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
-                            >
-                              {job.company}
-                            </a>
-                          ) : (
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                              {job.company}
-                            </p>
-                          )}
-                        </div>
+              return (
+                <Card
+                  key={job.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View details for ${job.title} at ${job.company}`}
+                  onClick={() => openJob(job)}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) return;
 
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openJob(job);
+                    }
+                  }}
+                  className="group focus-visible:ring-brand/40 relative flex h-full cursor-pointer flex-col border-zinc-200 focus-visible:ring-2 focus-visible:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
+                >
+                  <CardContent className="flex flex-1 flex-col gap-4 px-5">
+                    <div className="flex items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="line-clamp-2 text-[15px] leading-snug font-semibold tracking-tight">
+                          {job.title}
+                        </h3>
+                        <p className="text-muted-foreground mt-0.5 truncate text-sm">
+                          {job.company}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 flex-col items-end gap-1">
                         <Button
                           variant="ghost"
-                          size="sm"
-                          onClick={() => toggleSave(job.id)}
-                          className="h-8 w-8 p-0 shrink-0"
-                          aria-label={
-                            saved.includes(job.id) ? "Unsave job" : "Save job"
-                          }
+                          size="icon-sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleSave(job.id);
+                          }}
+                          aria-label={isSaved ? "Unsave job" : "Save job"}
+                          className="text-muted-foreground hover:text-foreground"
                         >
                           <Bookmark
-                            className={`h-4 w-4 ${
-                              saved.includes(job.id) ? "fill-current" : ""
-                            }`}
+                            className={cn(
+                              "size-4",
+                              isSaved && "text-brand fill-current",
+                            )}
                           />
                         </Button>
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 mb-3">
-                        <span>{job.location.join(", ")}</span>
-                        <span>·</span>
-                        <span>{job.jobType || "Not specified"}</span>
-                        <span>·</span>
-                        <span>{job.workMode}</span>
-                        {job.experienceRequired && (
-                          <>
-                            <span>·</span>
-                            <span>{job.experienceRequired}</span>
-                          </>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {(job.match?.reasons ?? [])
-                          .slice(0, 2)
-                          .map((reason: string, index: number) => (
-                            <span
-                              key={index}
-                              className="text-xs px-2 py-0.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 rounded"
-                            >
-                              {reason}
-                            </span>
-                          ))}
-
-                        <span className="text-xs px-2 py-0.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 rounded">
-                          {job.match?.score ?? 0}%{" "}
-                          {job.match?.category ?? "Lower Match"}
-                        </span>
-                      </div>
-
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-4">
-                        {job.description}
-                      </p>
-
-                      {(job.salaryMin || job.salaryMax) && (
-                        <p className="mb-4 text-xs text-zinc-500">
-                          Salary:{" "}
-                          {[job.salaryMin, job.salaryMax]
-                            .filter(
-                              (value): value is number => value !== undefined,
-                            )
-                            .join(" - ")}{" "}
-                          {job.salaryCurrency ?? ""}
-                          {job.salaryPeriod ? ` / ${job.salaryPeriod}` : ""}
-                        </p>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center text-xs text-zinc-400">
-                          {sourceLogos[job.source] && (
-                            <img
-                              src={sourceLogos[job.source]}
-                              alt={`${job.source} logo`}
-                              className="ml-1.5 h-5 w-5 object-contain"
-                            />
-                          )}
-                          <span className="ml-1.5">{job.source}</span>
-                          {job.postedAt &&
-                            ` · ${new Date(job.postedAt).toLocaleDateString()}`}
-                        </span>
-
-                        <Button size="sm" onClick={() => handleApply(job.url)}>
-                          Apply
-                          <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+                      <span className="inline-flex min-w-0 items-center gap-1">
+                        <MapPin className="size-3.5 shrink-0" />
+                        <span className="truncate">
+                          {job.location.join(", ") || "Not specified"}
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Briefcase className="size-3.5 shrink-0" />
+                        {job.jobType || "Not specified"}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Laptop className="size-3.5 shrink-0" />
+                        {job.workMode}
+                      </span>
+                    </div>
+
+                    <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed">
+                      {job.description}
+                    </p>
+
+                    {reasons.length > 0 && (
+                      <ul className="space-y-1">
+                        {reasons.slice(0, 2).map((reason) => (
+                          <li
+                            key={reason}
+                            className="text-muted-foreground flex items-start gap-1.5 text-[11px]"
+                          >
+                            <CheckCircle2 className="mt-px size-3 shrink-0 text-emerald-500" />
+                            <span className="line-clamp-1">{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {salary && (
+                      <p className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                        <Banknote className="text-muted-foreground size-3.5" />
+                        {salary}
+                      </p>
+                    )}
+
+                    <div className="border-border/70 mt-auto flex items-center justify-between gap-2 pt-3">
+                      <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs">
+                        {sourceLogos[job.source] && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={sourceLogos[job.source]}
+                            alt=""
+                            className="size-4 object-contain"
+                            loading="lazy"
+                          />
+                        )}
+                        <span className="truncate">{job.source}</span>
+                        {postedAt && (
+                          <span className="shrink-0">· {postedAt}</span>
+                        )}
+                      </span>
+
+                      <Button
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleApply(job.url);
+                        }}
+                      >
+                        Apply
+                        <ExternalLink className="ml-1.5 size-3.5" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
         </div>
 
         {!jobsLoading && !jobsError && sourceJobs.length > 0 && (

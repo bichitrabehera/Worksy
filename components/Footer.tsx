@@ -6,16 +6,19 @@ import { GitHubLight, LinkedIn } from "developer-icons";
 const Footer = () => {
   return (
     <footer className="border-t border-zinc-800 bg-[#060312] text-white">
-      <div className="mx-auto max-w-5xl px-6 pt-16 pb-8 sm:px-10 lg:px-12">
+      <div className="mx-auto max-w-5xl px-4 pt-16 pb-8 sm:px-10">
         {/* Top section */}
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <span className="text-xl font-semibold tracking-tight">
-                worksy<span className="text-zinc-500">.</span>
-              </span>
-            </Link>
+            <div className="flex gap-6">
+              <Link
+                href="/"
+                className="text-brand font-[copper] text-xl font-semibold"
+              >
+                Worksy
+              </Link>
+            </div>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-400">
               Your next opportunity shouldn't be hard to find. Discover remote
@@ -109,19 +112,12 @@ const Footer = () => {
         </div>
 
         {/* Bottom section */}
-        <div className="mt-16 flex flex-col gap-4  pt-7 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-16 flex flex-col gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-zinc-500">Worksy. All rights reserved.</p>
 
           <p className="text-xs text-zinc-500">
             Built to make your next move easier.
           </p>
-
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 text-xs text-zinc-400 transition hover:text-white"
-          >
-            Back to top
-          </Link>
         </div>
       </div>
     </footer>

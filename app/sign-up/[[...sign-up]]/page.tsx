@@ -1,3 +1,4 @@
+
 import { SignUp } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -9,19 +10,13 @@ async function SignUpContent() {
 
   if (userId) redirect("/jobs");
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
-      <SignUp />
-    </div>
-  );
+  return <SignUp />;
 }
 
-export default async function Page() {
+export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
-      <Suspense fallback={<Loader fullScreen />}>
-        <SignUpContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<Loader fullScreen />}>
+      <SignUpContent />
+    </Suspense>
   );
 }

@@ -1,3 +1,4 @@
+
 import { SignIn } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -9,14 +10,10 @@ async function SignInContent() {
 
   if (userId) redirect("/jobs");
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
-      <SignIn />
-    </div>
-  );
+  return <SignIn />;
 }
 
-export default function Page() {
+export default function SignInPage() {
   return (
     <Suspense fallback={<Loader fullScreen />}>
       <SignInContent />

@@ -6,6 +6,11 @@ import { Bookmark, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Loader from "@/components/ui/loader";
+import {
+  removeJobFromServer,
+  removeSavedJobId,
+  writeSavedJobIds,
+} from "@/lib/saved-jobs";
 import type { Job } from "@/lib/types";
 
 export default function MyJobsPage() {
@@ -22,7 +27,11 @@ export default function MyJobsPage() {
       if (!response.ok) throw new Error("Failed to load saved jobs.");
 
       const data = await response.json();
-      setSavedJobs(data.saved ?? []);
+      const jobs: Job[] = data.saved ?? [];
+
+      setSavedJobs(jobs);
+      // Keep the bookmark cache in sync with the server.
+      writeSavedJobIds(jobs.map((job) => job.id));
     } catch (loadError) {
       console.error("Saved jobs loading failed:", loadError);
       setError("Unable to load saved jobs. Please try again.");
@@ -37,15 +46,11 @@ export default function MyJobsPage() {
 
   const removeSaved = async (id: string) => {
     setSavedJobs((jobs) => jobs.filter((job) => job.id !== id));
+    // Clear the cached id immediately so bookmarks elsewhere update too.
+    removeSavedJobId(id);
 
     try {
-      const response = await fetch("/api/saved", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sourceJobId: id }),
-      });
-
-      if (!response.ok) throw new Error("Failed to remove saved job.");
+      await removeJobFromServer(id);
     } catch (removeError) {
       console.error("Saved job removal failed:", removeError);
       await loadSavedJobs();

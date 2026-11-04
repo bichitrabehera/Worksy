@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/jobs", label: "Jobs" },
-  { href: "/my-jobs", label: "Saved Jobs" },
+  { href: "/my-jobs", label: "Bookmarks" },
 ];
 
 function getInitials(name?: string | null) {
@@ -42,7 +42,7 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-background/10 backdrop-blur">
+    <header className="bg-background/10 sticky top-0 z-50 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center gap-6">
           <Link
@@ -53,30 +53,29 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <nav className="hidden items-center justify-center gap-6 md:flex">
-          {links.map((link) => {
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm hover:text-neutral-500"
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
         <div className="flex items-center justify-center gap-4">
+          <nav className="hidden items-center justify-center gap-6 md:flex">
+            {links.map((link) => {
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm hover:text-neutral-500"
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
           {!isLoaded ? (
             <Loader className="size-8" />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="focus-visible:ring-ring/50 rounded-full outline-none focus-visible:ring-3"
                 aria-label="Open account menu"
               >
-                <div className="flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium text-foreground hover:text-neutral-500">
-                  {user.fullName || "Your account"}
+                <div className="text-foreground flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium hover:text-neutral-500">
                   <Avatar>
                     <AvatarImage
                       src={user.imageUrl}
@@ -89,7 +88,7 @@ export default function Navbar() {
               <DropdownMenuContent align="end" className="min-w-48">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium text-foreground"></span>
+                    <span className="text-foreground text-sm font-medium"></span>
                     <span className="truncate text-xs font-normal">
                       {user.primaryEmailAddress?.emailAddress}
                     </span>
