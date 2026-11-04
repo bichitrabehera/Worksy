@@ -71,7 +71,6 @@ should be treated as historical context.
   - `GET /api/jobs`
   - `GET|POST /api/onboarding`
   - `GET|POST|DELETE /api/saved`
-  - `GET|POST /api/user/sync`
   - `DELETE /api/user/delete`
 - Added request authentication and explicit unauthorized, validation, not-found, and server
   error responses.
@@ -97,6 +96,8 @@ should be treated as historical context.
   complete yet.
 - Database and Redis credentials are supplied through environment variables; secrets are not
   stored in the repository.
+- Routine profile reads use the database through `/api/onboarding`; Clerk-to-database user
+  provisioning occurs only when a first-time user submits onboarding.
 
 ## Recent worktree changes
 

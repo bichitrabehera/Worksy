@@ -132,16 +132,22 @@ export default function JobsPage() {
 
     const loadUserData = async () => {
       try {
-        const res = await fetch("/api/user/sync", {
+        const res = await fetch("/api/onboarding", {
           method: "GET",
         });
+
+        if (res.status === 404) {
+          setRedirecting(true);
+          window.location.replace("/onboarding");
+          return;
+        }
 
         if (!res.ok) {
           throw new Error("Failed to load profile");
         }
 
         const data = await res.json();
-        const userProfile = data.user?.profile ?? null;
+        const userProfile = data.profile ?? null;
 
         if (userProfile) {
           setProfile(userProfile);

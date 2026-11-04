@@ -5,7 +5,7 @@ import { GitHubLight, LinkedIn } from "developer-icons";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-zinc-800 bg-[#060312] text-white">
+    <footer className="border-t border-zinc-800 bg-[#202020] text-white">
       <div className="mx-auto max-w-5xl px-4 pt-16 pb-8 sm:px-10">
         {/* Top section */}
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-5">

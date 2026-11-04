@@ -191,7 +191,7 @@ export default function OnboardingPage() {
 
     let active = true;
 
-    const syncAndCheckProfile = async () => {
+    const loadProfile = async () => {
       setForm((f) => ({
         ...f,
         fullName:
@@ -201,23 +201,21 @@ export default function OnboardingPage() {
       }));
 
       try {
-        const response = await fetch("/api/user/sync");
+        const response = await fetch("/api/onboarding");
         const data = await response.json();
 
         if (!active) return;
 
-        if (data.user?.profile?.onboardingCompleted) {
+        if (data.profile?.onboardingCompleted) {
           router.replace("/jobs");
           return;
         }
-
-        await fetch("/api/user/sync", { method: "POST" });
       } catch (error) {
-        console.error(error);
+        console.error("Profile loading failed:", error);
       }
     };
 
-    syncAndCheckProfile();
+    loadProfile();
 
     return () => {
       active = false;
@@ -276,12 +274,6 @@ export default function OnboardingPage() {
     setError("");
 
     try {
-      const syncResponse = await fetch("/api/user/sync", { method: "POST" });
-      if (!syncResponse.ok) {
-        const result = await syncResponse.json().catch(() => null);
-        throw new Error(result?.error || "Unable to sync your account.");
-      }
-
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: {

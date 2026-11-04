@@ -101,17 +101,7 @@ export default function ProfilePage() {
 
     const loadProfile = async () => {
       try {
-        let response = await fetch("/api/user/sync", { cache: "no-store" });
-
-        // Retry once on transient failures (for example, the session cookie
-        // still settling right after sign-in).
-        if (
-          !response.ok &&
-          (response.status === 401 || response.status >= 500)
-        ) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          response = await fetch("/api/user/sync", { cache: "no-store" });
-        }
+        const response = await fetch("/api/onboarding", { cache: "no-store" });
 
         const data = await response.json().catch(() => null);
 
@@ -125,7 +115,7 @@ export default function ProfilePage() {
 
         if (!active) return;
 
-        const savedProfile = data?.user?.profile;
+        const savedProfile = data?.profile;
 
         if (savedProfile) {
           const normalized: Profile = {
@@ -330,7 +320,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-12 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="space-y-1">

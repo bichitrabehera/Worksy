@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import redis from "@/lib/redis";
+import { getAuthenticatedUser } from "@/lib/current-user";
 
 export async function GET() {
   try {
@@ -36,21 +37,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
+    const user = await getAuthenticatedUser();
 
-    if (!userId) {
+    if (!user?.clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    const userId = user.clerkId;
 
     const profile = await prisma.profile.update({
       where: { userId: user.id },

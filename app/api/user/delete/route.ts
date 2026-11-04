@@ -9,15 +9,13 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
     const client = await clerkClient();
     await client.users.deleteUser(userId);
-    await prisma.user.delete({ where: { id: user.id } });
+
+    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (user) {
+      await prisma.user.delete({ where: { id: user.id } });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
