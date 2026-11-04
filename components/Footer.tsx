@@ -24,7 +24,7 @@ const Footer = () => {
             </p>
 
             <a
-              href="mailto:hello@worksy.com"
+              href="mailto:bichitrabehera.345@gmail.com"
               className="mt-6 inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white"
             >
               Get in touch
@@ -64,7 +64,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="mailto:hello@worksy.com"
+                  href="mailto:bichitrabehera.345@gmail.com"
                   className="transition hover:text-white"
                 >
                   Contact
@@ -84,7 +84,7 @@ const Footer = () => {
             <ul className="mt-5 space-y-3 text-sm text-zinc-400">
               <li>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/bichitrabehera"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 transition hover:text-white"
@@ -95,7 +95,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="https://linkedin.com"
+                  href="https://linkedin.com/in/bichitrabehera"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 transition hover:text-white"

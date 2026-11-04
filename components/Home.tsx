@@ -46,7 +46,7 @@ const Home = () => {
               Personalized recommendations. Less noise.
             </div>
 
-            <h1 className="text-balance font-[copper] text-7xl tracking-tight text-zinc-900 dark:text-white">
+            <h1 className="text-balance font-[copper] text-5xl lg:text-7xl tracking-tight text-zinc-900 dark:text-white">
               Find work that{" "}
               <span className="text-brand italic">fits you.</span>
             </h1>
@@ -92,7 +92,7 @@ const Home = () => {
                 Job sources
               </h2>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-center gap-x-10 gap-y-6">
               {[
                 {
                   name: "Remotive",
@@ -103,7 +103,7 @@ const Home = () => {
                   name: "Himalayas",
                   logo: "https://www.google.com/s2/favicons?domain=himalayas.app&sz=128",
                   url: "https://himalayas.app",
-                }, 
+                },
                 {
                   name: "Remote OK",
                   logo: "https://www.google.com/s2/favicons?domain=remoteok.com&sz=128",
@@ -120,7 +120,7 @@ const Home = () => {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 hover:opacity-100 hover:grayscale-0 transition-all duration-200"
+                  className="flex items-center border justify-center p-2 rounded-md gap-2.5 hover:opacity-100 hover:grayscale-0 transition-all duration-200"
                 >
                   <img
                     src={source.logo}

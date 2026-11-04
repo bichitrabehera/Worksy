@@ -137,3 +137,8 @@
   font-display: swap;
   color: #030712;
 }
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
