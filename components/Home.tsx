@@ -13,6 +13,26 @@ import {
   ExternalLink,
 } from "lucide-react";
 
+const data = [
+  {
+    title: "Personalized feed",
+    description:
+      "Every opportunity is scored against your skills, roles, location, work mode, and experience level.",
+    icon: <Sparkles className="h-5 w-5 mb-4 text-brand" />,
+  },
+  {
+    title: "Keep your shortlist",
+    description: "Save promising roles and keep them available for 30 days.",
+    icon: <Bookmark className="h-5 w-5 mb-4 text-brand" />,
+  },
+  {
+    title: "Apply with confidence",
+    description:
+      "See why a role matches, then follow the original listing or company link to apply.",
+    icon: <ExternalLink className="h-5 w-5 mb-4 text-brand" />,
+  },
+];
+
 const Home = () => {
   const { user, isLoaded } = useUser();
 
@@ -66,7 +86,12 @@ const Home = () => {
           </div>
 
           {/* Job sources */}
-          <div className="my-12">
+          <div className="my-12 space-y-6">
+            <div className="py-3">
+              <h2 className="text-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                Job sources
+              </h2>
+            </div>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
               {[
                 {
@@ -78,7 +103,7 @@ const Home = () => {
                   name: "Himalayas",
                   logo: "https://www.google.com/s2/favicons?domain=himalayas.app&sz=128",
                   url: "https://himalayas.app",
-                },
+                }, 
                 {
                   name: "Remote OK",
                   logo: "https://www.google.com/s2/favicons?domain=remoteok.com&sz=128",
@@ -102,7 +127,7 @@ const Home = () => {
                     alt={`${source.name} logo`}
                     className="h-7 w-7 object-contain"
                   />
-                  <span className="text-sm font-semibold tracking-tight text-zinc-700 hover:text-neutral-500 dark:text-zinc-300">
+                  <span className="text-sm font-semibold tracking-tight text-zinc-700 hover:text-neutral-500 dark:text-zinc-300 font-[copper]">
                     {source.name}
                   </span>
                 </a>
@@ -112,36 +137,24 @@ const Home = () => {
 
           <section className="py-12">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="border bg-neutral-100 border-zinc-200 dark:border-zinc-800 rounded-sm p-6 ">
-                <Search className="h-5 w-5 mb-4 text-brand" />
-                <h3 className="text-base font-medium mb-2">
-                  Personalized feed
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Every opportunity is scored against your skills, roles,
-                  location, work mode, and experience level.
-                </p>
-              </div>
+              {data.map((item) => {
+                const IconComponent = item.icon;
 
-              <div className="border bg-neutral-100 border-zinc-200 dark:border-zinc-800 rounded-sm p-6 ">
-                <Bookmark className="h-5 w-5 mb-4 text-brand" />
-                <h3 className="text-base font-medium mb-2">
-                  Keep your shortlist
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Save promising roles and keep them available for 30 days.
-                </p>
-              </div>
-              <div className="border bg-neutral-100 border-zinc-200 dark:border-zinc-800 rounded-sm p-6 ">
-                <ArrowRight className="h-5 w-5 mb-4 text-brand" />
-                <h3 className="text-base font-medium mb-2">
-                  Apply with confidence
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  See why a role matches, then follow the original listing or
-                  company link to apply.
-                </p>
-              </div>
+                return (
+                  <div
+                    key={item.title}
+                    className="border bg-neutral-100 border-zinc-200 dark:border-zinc-800 rounded-sm p-6"
+                  >
+                    {IconComponent}
+                    <h3 className="text-base font-medium mb-2 font-[copper]">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </section>
         </main>

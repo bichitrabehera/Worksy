@@ -34,6 +34,13 @@ import {
 
 const JOBS_CACHE_TTL = 45 * 60 * 1000;
 
+const sourceLogos: Record<string, string> = {
+  Remotive: "https://www.google.com/s2/favicons?domain=remotive.com&sz=128",
+  Himalayas: "https://www.google.com/s2/favicons?domain=himalayas.app&sz=128",
+  "Remote OK": "https://www.google.com/s2/favicons?domain=remoteok.com&sz=128",
+  Jobicy: "https://www.google.com/s2/favicons?domain=jobicy.com&sz=128",
+};
+
 function getJobsCacheKey(
   userId: string,
   profile: any,
@@ -69,7 +76,7 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 50;
+  const pageSize = 16;
 
   const [filters, setFilters] = useState({
     jobType: "",
@@ -520,8 +527,15 @@ export default function JobsPage() {
                       )}
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-zinc-400">
-                          via {job.source}
+                        <span className="inline-flex items-center text-xs text-zinc-400">
+                          {sourceLogos[job.source] && (
+                            <img
+                              src={sourceLogos[job.source]}
+                              alt={`${job.source} logo`}
+                              className="ml-1.5 h-5 w-5 object-contain"
+                            />
+                          )}
+                          <span className="ml-1.5">{job.source}</span>
                           {job.postedAt &&
                             ` · ${new Date(job.postedAt).toLocaleDateString()}`}
                         </span>
