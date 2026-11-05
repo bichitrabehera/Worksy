@@ -1,4 +1,3 @@
-
 import { SignIn } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -16,7 +15,9 @@ async function SignInContent() {
 export default function SignInPage() {
   return (
     <Suspense fallback={<Loader fullScreen />}>
-      <SignInContent />
+      <div className="flex h-full min-h-screen items-center justify-center">
+        <SignInContent />
+      </div>
     </Suspense>
   );
 }

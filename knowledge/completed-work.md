@@ -50,6 +50,8 @@ should be treated as historical context.
 - Ranks jobs by personalized match score, then by posting date.
 - Keeps lower-scoring jobs in the feed instead of silently discarding them.
 - Shows the original source and application URL for each listing.
+- Pagination is applied server-side before the response is serialized; the full
+  contract is documented in [`jobs-api.md`](./jobs-api.md).
 
 ## Matching
 
@@ -64,9 +66,14 @@ should be treated as historical context.
   jobs in [`prisma/schema.prisma`](../prisma/schema.prisma).
 - Added Prisma client setup for PostgreSQL.
 - Added Upstash Redis integration for:
-  - Personalized job-feed caching with a 45-minute TTL.
+  - A shared provider job pool with a 30-minute TTL and a bounded per-provider
+    fetch budget.
+  - A compact per-user ranked feed with a 45-minute TTL. Feed entries store
+    360-character description previews, so page requests do not move the full
+    job corpus.
   - Per-user saved-job storage with a 30-day TTL.
-  - Cache invalidation after profile updates.
+  - Cache invalidation after profile updates, using the same key helper as the
+    jobs service.
 - Added API routes:
   - `GET /api/jobs`
   - `GET|POST /api/onboarding`

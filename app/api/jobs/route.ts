@@ -2,13 +2,23 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { connection } from "next/server";
 
-import { truncateDescription } from "@/lib/job-display";
-import { getUserJobs } from "@/lib/jobs-service";
+import { DEFAULT_JOB_QUERY, getUserJobsPage } from "@/lib/jobs-service";
 
-import type { JobQuery } from "@/lib/types";
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 50;
+const MAX_SEARCH_LENGTH = 120;
+
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) return fallback;
+
+  return Math.max(1, Math.floor(parsed));
+}
 
 export async function GET(req: NextRequest) {
   await connection();
+
   try {
     // 1. Authenticate using Clerk.
     const { userId } = await auth();
@@ -17,78 +27,64 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Read pagination parameters.
+    // 2. Read and bound pagination parameters. Paging is applied to the already
+    // ranked feed, so a request only pays for the page it returns.
     const sp = req.nextUrl.searchParams;
 
-    const page = Math.max(1, Number(sp.get("page")) || 1);
-    const pageSize = Math.min(50, Math.max(1, Number(sp.get("limit")) || 50));
+    const page = parsePositiveInt(sp.get("page"), 1);
+    const pageSize = Math.min(
+      MAX_PAGE_SIZE,
+      parsePositiveInt(sp.get("limit"), DEFAULT_PAGE_SIZE),
+    );
 
-    // 3. Build job query.
-    const searchQuery = sp.get("q")?.trim().toLowerCase() || "";
-    const query: JobQuery = {
-      q: "",
-      where: sp.get("where") ?? "India",
-      remoteOnly: true,
-      limit: 50,
-    };
-    const jobType = sp.get("jobType")?.trim().toLowerCase() || "";
-    const workMode = sp.get("workMode")?.trim().toLowerCase() || "";
+    // 3. Search and filters are matched against the ranked feed.
+    const searchQuery = (sp.get("q") ?? "")
+      .trim()
+      .slice(0, MAX_SEARCH_LENGTH)
+      .toLowerCase();
+    const jobType = (sp.get("jobType") ?? "").trim().toLowerCase();
+    const workMode = (sp.get("workMode") ?? "").trim().toLowerCase();
 
-    // 4. Get the user's cached feed, or fetch and personalize it.
-    const result = await getUserJobs(userId, query);
-
-    // 5. Apply search and filters after matching and ranking.
-    const allJobs = result.jobs.filter((job) => {
-      const searchableText = [
-        job.title,
-        job.company,
-        job.description,
-        job.requirements,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch =
-        !searchQuery || searchableText.includes(searchQuery);
-      const matchesJobType =
-        !jobType || job.jobType?.trim().toLowerCase() === jobType;
-      const matchesWorkMode =
-        !workMode || job.workMode?.trim().toLowerCase() === workMode;
-
-      return matchesSearch && matchesJobType && matchesWorkMode;
+    // 4. Get only the requested page.
+    const result = await getUserJobsPage(userId, DEFAULT_JOB_QUERY, {
+      page,
+      pageSize,
+      searchQuery,
+      jobType,
+      workMode,
     });
 
-    const start = (page - 1) * pageSize;
+    const nextPage = result.hasMore ? result.page + 1 : null;
+    const previousPage = result.hasPrevious ? result.page - 1 : null;
 
-    // 6. Keep the cached descriptions complete, but send a short preview to the
-    // feed. The job detail page requests the full description.
-    const finalJobs = allJobs
-      .slice(start, start + pageSize)
-      .map((job) => ({
-        ...job,
-        description: truncateDescription(job.description),
-      }));
-
-    const totalCount = allJobs.length;
-    const matchedCount = allJobs.length;
-    const totalPages = Math.ceil(totalCount / pageSize);
-
-    // 7. Return only the requested page.
+    // 5. Return the page plus explicit pagination metadata. The flat fields are
+    // kept for existing callers; `pagination` is the documented contract.
     return NextResponse.json(
       {
-        jobs: finalJobs,
+        jobs: result.jobs,
 
         // Current page information
-        count: finalJobs.length,
-        page,
-        pageSize,
-        hasMore: start + pageSize < totalCount,
+        count: result.jobs.length,
+        page: result.page,
+        pageSize: result.pageSize,
+        hasMore: result.hasMore,
 
         // Complete collection information
-        totalCount,
-        matchedCount,
-        totalPages,
+        totalCount: result.totalCount,
+        matchedCount: result.totalCount,
+        totalPages: result.totalPages,
+
+        pagination: {
+          page: result.page,
+          limit: result.pageSize,
+          returned: result.jobs.length,
+          total: result.totalCount,
+          totalPages: result.totalPages,
+          hasNextPage: result.hasMore,
+          hasPreviousPage: result.hasPrevious,
+          nextPage,
+          previousPage,
+        },
 
         // Provider information
         sources: result.sources,

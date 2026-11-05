@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import redis from "@/lib/redis";
 import { getAuthenticatedUser } from "@/lib/current-user";
+import { DEFAULT_JOB_QUERY, getFeedCacheKey } from "@/lib/jobs-service";
 
 export async function GET() {
   try {
@@ -101,9 +102,10 @@ export async function POST(req: Request) {
       },
     });
 
-    // Invalidate ONLY this user's personalized jobs cache.
+    // Invalidate ONLY this user's personalized jobs cache. The key must match
+    // the one the jobs service writes, otherwise profile changes stay stale.
     try {
-      await redis.del(`jobs:user:${userId}:feed:India:all`);
+      await redis.del(getFeedCacheKey(userId, DEFAULT_JOB_QUERY));
 
       console.log(`Invalidated jobs cache for ${userId}`);
     } catch (redisError) {

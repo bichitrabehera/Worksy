@@ -5,7 +5,10 @@ const stripHtml = (html = "") =>
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|div|section|article|h[1-6]|li|tr|ul|ol|blockquote)>/gi, "\n")
+    .replace(
+      /<\/(p|div|section|article|h[1-6]|li|tr|ul|ol|blockquote)>/gi,
+      "\n",
+    )
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -48,26 +51,19 @@ const isIndiaEligible = (location = "") => {
   );
 };
 
-const isHimalayasIndiaEligible = (job: any) => {
-  const locations: string[] = job.locationRestrictions ?? [];
-  const timezones: string[] = job.timezoneRestrictions ?? [];
-
-  const locationAllowed =
-    locations.length === 0 ||
-    locations.some((location) => /india/i.test(location));
-
-  const timezoneAllowed =
-    timezones.length === 0 ||
-    timezones.some((timezone) => /utc\+?05:30|5\.5/i.test(String(timezone)));
-
-  return locationAllowed && timezoneAllowed;
-};
-
 const getJobType = (value: unknown): string | undefined => {
   if (Array.isArray(value)) return value.join(", ");
   if (typeof value === "string" && value.trim()) return value;
   return undefined;
 };
+
+// Keep one provider from stalling a cold request by walking its entire pagination
+// chain. The service asks for a bounded number of listings per provider.
+const providerLimit = (query: JobQuery) =>
+  Math.max(1, Math.floor(query.limit) || 200);
+
+const byNewest = (a: Job, b: Job) =>
+  (new Date(b.postedAt).getTime() || 0) - (new Date(a.postedAt).getTime() || 0);
 
 const fetchJson = async (url: URL, cacheSeconds = 3600) => {
   const controller = new AbortController();
@@ -108,24 +104,23 @@ export async function fetchRemotive(query: JobQuery): Promise<Job[]> {
   const data = await fetchJson(url, 86400);
 
   return (data.jobs ?? [])
-    .filter((job: any) => isIndiaEligible(job.candidate_required_location))
-    .map(
-      (job: any): Job => ({
-        id: `remotive-${job.id}`,
-        title: job.title ?? "Untitled role",
-        company: job.company_name ?? "Unknown company",
-        companyUrl: asUrl(job.company_url ?? job.company_website),
-        location: [job.candidate_required_location || "Remote"],
-        description: stripHtml(job.description ?? ""),
-        requirements: stripHtml(job.requirements ?? ""),
-        jobType: getJobType(job.job_type),
-        workMode: "Remote",
-        url: job.url,
-        source: "Remotive",
-        postedAt: job.publication_date ?? "",
-        experienceRequired: job.experience_level,
-      }),
-    );
+    .map((job: any): Job => ({
+      id: `remotive-${job.id}`,
+      title: job.title ?? "Untitled role",
+      company: job.company_name ?? "Unknown company",
+      companyUrl: asUrl(job.company_url ?? job.company_website),
+      location: [job.candidate_required_location || "Remote"],
+      description: stripHtml(job.description ?? ""),
+      requirements: stripHtml(job.requirements ?? ""),
+      jobType: getJobType(job.job_type),
+      workMode: "Remote",
+      url: job.url,
+      source: "Remotive",
+      postedAt: job.publication_date ?? "",
+      experienceRequired: job.experience_level,
+    }))
+    .sort(byNewest)
+    .slice(0, providerLimit(query));
 }
 
 // --------------------------------------------------
@@ -135,16 +130,16 @@ export async function fetchRemotive(query: JobQuery): Promise<Job[]> {
 export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
   const allJobs: any[] = [];
   const seenCursors = new Set<string>();
+  const limit = providerLimit(query);
 
   // Keyword search uses the search endpoint's page pagination.
   if (query.q && query.q.toLowerCase() !== "fresher") {
     let page = 1;
 
-    while (true) {
+    while (allJobs.length < limit) {
       const url = new URL("https://himalayas.app/jobs/api/search");
 
       url.searchParams.set("q", query.q);
-      url.searchParams.set("country", "IN");
       url.searchParams.set("sort", "recent");
       url.searchParams.set("page", String(page));
 
@@ -166,7 +161,7 @@ export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
     // Full feed uses cursor pagination.
     let cursor: string | null = null;
 
-    while (true) {
+    while (allJobs.length < limit) {
       const url = new URL("https://himalayas.app/jobs/api");
 
       url.searchParams.set("limit", "20");
@@ -190,32 +185,33 @@ export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
   }
 
   return allJobs
-    .filter((job: any) => isHimalayasIndiaEligible(job))
-    .map(
-      (job: any): Job => ({
-        id: `himalayas-${job.guid}`,
-        title: job.title ?? "Untitled role",
-        company: job.companyName ?? "Unknown company",
-        companyUrl: asUrl(job.companyWebsite ?? job.companyUrl ?? job.company_url),
-        location: [
-          job.locationRestrictions?.length
-            ? job.locationRestrictions.join(", ")
-            : "Worldwide Remote",
-        ],
-        description: stripHtml(job.description ?? job.excerpt ?? ""),
-        requirements: stripHtml(job.requirements ?? ""),
-        jobType: job.employmentType,
-        workMode: "Remote",
-        salaryMin: asNumber(job.minSalary),
-        salaryMax: asNumber(job.maxSalary),
-        salaryCurrency: job.currency,
-        salaryPeriod: job.salaryPeriod,
-        url: job.applicationLink,
-        source: "Himalayas",
-        postedAt: job.pubDate ? new Date(job.pubDate * 1000).toISOString() : "",
-        experienceRequired: job.experienceLevel,
-      }),
-    );
+    .map((job: any): Job => ({
+      id: `himalayas-${job.guid}`,
+      title: job.title ?? "Untitled role",
+      company: job.companyName ?? "Unknown company",
+      companyUrl: asUrl(
+        job.companyWebsite ?? job.companyUrl ?? job.company_url,
+      ),
+      location: [
+        job.locationRestrictions?.length
+          ? job.locationRestrictions.join(", ")
+          : "Worldwide Remote",
+      ],
+      description: stripHtml(job.description ?? job.excerpt ?? ""),
+      requirements: stripHtml(job.requirements ?? ""),
+      jobType: job.employmentType,
+      workMode: "Remote",
+      salaryMin: asNumber(job.minSalary),
+      salaryMax: asNumber(job.maxSalary),
+      salaryCurrency: job.currency,
+      salaryPeriod: job.salaryPeriod,
+      url: job.applicationLink,
+      source: "Himalayas",
+      postedAt: job.pubDate ? new Date(job.pubDate * 1000).toISOString() : "",
+      experienceRequired: job.experienceLevel,
+    }))
+    .sort(byNewest)
+    .slice(0, limit);
 }
 
 // --------------------------------------------------
@@ -237,26 +233,29 @@ export async function fetchRemoteOK(query: JobQuery): Promise<Job[]> {
     ? data.filter((item: any) => item.id && item.position)
     : [];
 
-  return jobs.map((job: any): Job => {
-    const location = job.location || "Remote (check country eligibility)";
+  return jobs
+    .map((job: any): Job => {
+      const location = job.location || "Remote (check country eligibility)";
 
-    return {
-      id: `remoteok-${job.id}`,
-      title: job.position ?? "Untitled role",
-      company: job.company ?? "Unknown company",
-      companyUrl: asUrl(job.company_url ?? job.company_url_or_website),
-      description: stripHtml(job.description ?? ""),
-      jobType: getJobType(job.tags),
-      workMode: "Remote",
-      location: [location],
-      salaryMin: asNumber(job.salary_min),
-      salaryMax: asNumber(job.salary_max),
-      url: job.apply_url || job.url,
-      source: "Remote OK",
-      postedAt: job.date ?? "",
-      experienceRequired: job.experience_level,
-    };
-  });
+      return {
+        id: `remoteok-${job.id}`,
+        title: job.position ?? "Untitled role",
+        company: job.company ?? "Unknown company",
+        companyUrl: asUrl(job.company_url ?? job.company_url_or_website),
+        description: stripHtml(job.description ?? ""),
+        jobType: getJobType(job.tags),
+        workMode: "Remote",
+        location: [location],
+        salaryMin: asNumber(job.salary_min),
+        salaryMax: asNumber(job.salary_max),
+        url: job.apply_url || job.url,
+        source: "Remote OK",
+        postedAt: job.date ?? "",
+        experienceRequired: job.experience_level,
+      };
+    })
+    .sort(byNewest)
+    .slice(0, providerLimit(query));
 }
 
 // --------------------------------------------------
@@ -266,10 +265,11 @@ export async function fetchRemoteOK(query: JobQuery): Promise<Job[]> {
 export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
   const allJobs: any[] = [];
   const seenCursors = new Set<string>();
+  const limit = providerLimit(query);
 
   let cursor: string | null = null;
 
-  while (true) {
+  while (allJobs.length < limit) {
     const url = new URL("https://jobicy.com/api/jobs");
 
     url.searchParams.set("count", "200");
@@ -303,26 +303,27 @@ export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
   }
 
   return allJobs
-    .filter((job: any) => isIndiaEligible(job.jobGeo))
-    .map(
-      (job: any): Job => ({
-        id: `jobicy-${job.id}`,
-        title: job.jobTitle ?? "Untitled role",
-        company: job.companyName ?? "Unknown company",
-        companyUrl: asUrl(job.companyWebsite ?? job.companyUrl ?? job.company_url),
-        location: [job.jobGeo || "Worldwide Remote"],
-        description: stripHtml(job.jobDescription ?? job.jobExcerpt ?? ""),
-        requirements: stripHtml(job.jobRequirements ?? ""),
-        jobType: getJobType(job.jobType),
-        workMode: "Remote",
-        salaryMin: asNumber(job.salaryMin),
-        salaryMax: asNumber(job.salaryMax),
-        salaryCurrency: job.salaryCurrency,
-        salaryPeriod: job.salaryPeriod,
-        url: job.url,
-        source: "Jobicy",
-        postedAt: job.pubDate ?? "",
-        experienceRequired: job.jobLevel,
-      }),
-    );
+    .map((job: any): Job => ({
+      id: `jobicy-${job.id}`,
+      title: job.jobTitle ?? "Untitled role",
+      company: job.companyName ?? "Unknown company",
+      companyUrl: asUrl(
+        job.companyWebsite ?? job.companyUrl ?? job.company_url,
+      ),
+      location: [job.jobGeo || "Worldwide Remote"],
+      description: stripHtml(job.jobDescription ?? job.jobExcerpt ?? ""),
+      requirements: stripHtml(job.jobRequirements ?? ""),
+      jobType: getJobType(job.jobType),
+      workMode: "Remote",
+      salaryMin: asNumber(job.salaryMin),
+      salaryMax: asNumber(job.salaryMax),
+      salaryCurrency: job.salaryCurrency,
+      salaryPeriod: job.salaryPeriod,
+      url: job.url,
+      source: "Jobicy",
+      postedAt: job.pubDate ?? "",
+      experienceRequired: job.jobLevel,
+    }))
+    .sort(byNewest)
+    .slice(0, limit);
 }

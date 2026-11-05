@@ -2,9 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { connection, NextResponse } from "next/server";
 
 import { decodeJobId } from "@/lib/job-id";
-import { getUserJobs } from "@/lib/jobs-service";
-
-import type { JobQuery } from "@/lib/types";
+import { DEFAULT_JOB_QUERY, getUserJob } from "@/lib/jobs-service";
 
 export async function GET(
   _req: Request,
@@ -29,15 +27,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid job id" }, { status: 400 });
     }
 
-    const query: JobQuery = {
-      q: "",
-      where: "India",
-      remoteOnly: true,
-      limit: 50,
-    };
-
-    const result = await getUserJobs(userId, query);
-    const job = result.jobs.find((item) => item.id === jobId);
+    const job = await getUserJob(userId, jobId, DEFAULT_JOB_QUERY);
 
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
@@ -54,9 +44,6 @@ export async function GET(
   } catch (error) {
     console.error("Job detail API error:", error);
 
-    return NextResponse.json(
-      { error: "Unable to load job" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Unable to load job" }, { status: 500 });
   }
 }
