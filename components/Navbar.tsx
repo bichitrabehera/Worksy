@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Bookmark, LogOut, User } from "lucide-react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { GlobalCommandMenu } from "@/components/global-command-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +16,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+
 import Loader from "@/components/ui/loader";
 import { cn } from "@/lib/utils";
 
@@ -42,70 +45,73 @@ export default function Navbar() {
   );
 
   return (
-    <header className="bg-background/10 sticky top-0 z-50 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center gap-6">
-          <Link
-            href="/"
-            className="text-brand font-[copper] text-xl font-semibold"
-          >
-            Worksy
-          </Link>
-        </div>
+    <header className="border-border/60 bg-background/80 sticky top-0 z-50 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        {/* Brand */}
+        <Link
+          href="/"
+          className="text-brand shrink-0 font-[copper] text-xl font-semibold tracking-tight"
+        >
+          Worksy
+        </Link>
 
-        <div className="flex items-center justify-center gap-4">
-          <nav className="hidden items-center justify-center gap-6 md:flex">
-            {links.map((link) => {
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm hover:text-neutral-500"
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
+        {/* Desktop navigation */}
+        <nav className="hidden items-center gap-1 md:flex">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Search + Account */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <GlobalCommandMenu />
+
           {!isLoaded ? (
             <Loader className="size-8" />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="focus-visible:ring-ring/50 rounded-full outline-none focus-visible:ring-3"
                 aria-label="Open account menu"
+                className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
               >
-                <div className="text-foreground flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium hover:text-neutral-500">
-                  <Avatar>
-                    <AvatarImage
-                      src={user.imageUrl}
-                      alt={user.fullName ?? "Profile"}
-                    />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                </div>
+                <Avatar className="border-border size-9 cursor-pointer border transition-opacity hover:opacity-80">
+                  <AvatarImage
+                    src={user.imageUrl}
+                    alt={user.fullName ?? "Profile"}
+                  />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-48">
+
+              <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel className="flex flex-col gap-0.5">
-                    <span className="text-foreground text-sm font-medium"></span>
-                    <span className="truncate text-xs font-normal">
+                  <DropdownMenuLabel className="flex flex-col gap-1">
+                    <span className="text-foreground truncate text-sm font-medium">
+                      {user.fullName}
+                    </span>
+                    <span className="text-muted-foreground truncate text-xs font-normal">
                       {user.primaryEmailAddress?.emailAddress}
                     </span>
                   </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem render={<Link href="/profile" />}>
+                    <User />
+                    Profile
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem render={<Link href="/my-jobs" />}>
+                    <Bookmark />
+                    Saved jobs
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem render={<Link href="/profile" />}>
-                  <User />
-                  Profile
-                </DropdownMenuItem>
-
-                <DropdownMenuItem render={<Link href="/my-jobs" />}>
-                  <Bookmark />
-                  Saved jobs
-                </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
 
@@ -122,13 +128,20 @@ export default function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className={buttonVariants({ variant: "ghost", size: "lg" })}
+                className={buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                })}
               >
                 Sign in
               </Link>
+
               <Link
                 href="/sign-up"
-                className={cn(buttonVariants({ size: "lg" }), "hidden sm:flex")}
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "hidden sm:inline-flex",
+                )}
               >
                 Sign up
               </Link>

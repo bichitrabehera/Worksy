@@ -61,9 +61,6 @@ export default function MyJobsPage() {
     <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="mb-2 font-[copper] text-2xl font-semibold tracking-tight sm:text-2xl">
-            Saved
-          </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
             Jobs you&apos;ve saved for later. Saved jobs expire after 30 days.
           </p>
@@ -74,7 +71,7 @@ export default function MyJobsPage() {
         {!loading && error && (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-destructive text-sm">{error}</p>
               <Button className="mt-4" size="sm" onClick={loadSavedJobs}>
                 Try again
               </Button>
@@ -89,7 +86,10 @@ export default function MyJobsPage() {
               <p className="mb-4 text-zinc-600 dark:text-zinc-400">
                 No saved jobs yet
               </p>
-              <Button size="sm" onClick={() => (window.location.href = "/jobs")}>
+              <Button
+                size="sm"
+                onClick={() => (window.location.href = "/jobs")}
+              >
                 Browse jobs
               </Button>
             </CardContent>

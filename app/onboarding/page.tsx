@@ -71,13 +71,13 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
+      <div className="bg-muted/50 flex size-9 shrink-0 items-center justify-center rounded-lg border">
         <Icon className="size-4" />
       </div>
 
       <div className="space-y-0.5">
         <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-muted-foreground text-xs">{description}</p>
       </div>
     </div>
   );
@@ -96,7 +96,7 @@ function FormField({
     <div className="space-y-2">
       <Label className="text-sm font-medium">
         {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
+        {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {children}
     </div>
@@ -342,12 +342,12 @@ export default function OnboardingPage() {
   // --------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-muted/30 px-4 py-8 sm:py-12">
+    <div className="bg-muted/30 min-h-screen px-4 py-8 sm:py-12">
       <div className="mx-auto w-full max-w-3xl space-y-7">
         {/* HEADER */}
 
         <div className="space-y-3 text-center">
-          <div className="mx-auto flex size-11 items-center justify-center rounded-xl border bg-background">
+          <div className="bg-background mx-auto flex size-11 items-center justify-center rounded-xl border">
             <UserRound className="size-5" />
           </div>
 
@@ -355,7 +355,7 @@ export default function OnboardingPage() {
             Complete your profile
           </h1>
 
-          <p className="mx-auto max-w-md text-sm text-muted-foreground">
+          <p className="text-muted-foreground mx-auto max-w-md text-sm">
             Tell us about yourself to get relevant job and internship
             recommendations.
           </p>
@@ -366,7 +366,7 @@ export default function OnboardingPage() {
               <ProgressValue />
             </Progress>
 
-            <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+            <div className="text-muted-foreground mt-2 flex justify-between text-xs">
               <span>Step {step} of 3</span>
               <span>{Math.round((step / 3) * 100)}% completed</span>
             </div>
@@ -389,7 +389,7 @@ export default function OnboardingPage() {
               {/* PERSONAL DETAILS */}
 
               <section className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   Personal information
                 </h3>
 
@@ -410,7 +410,7 @@ export default function OnboardingPage() {
 
                   <FormField label="Phone number" required>
                     <div className="flex">
-                      <div className="flex items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground">
+                      <div className="bg-muted text-muted-foreground flex items-center rounded-l-md border border-r-0 px-3 text-sm">
                         +91
                       </div>
 
@@ -609,14 +609,16 @@ export default function OnboardingPage() {
                 </div>
               </section>
 
-              <Button
-                className="w-full"
-                disabled={!canProceedStep1}
-                onClick={() => setStep(2)}
-              >
-                Continue
-                <ArrowRight className="ml-2 size-4" />
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  className="flex w-fit"
+                  disabled={!canProceedStep1}
+                  onClick={() => setStep(2)}
+                >
+                  Continue
+                  <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -642,7 +644,7 @@ export default function OnboardingPage() {
                     Desired job roles{" "}
                     <span className="text-destructive">*</span>
                   </h3>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Select all roles that match your interests.
                   </p>
                 </div>
@@ -723,24 +725,26 @@ export default function OnboardingPage() {
                 </div>
               </section>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setStep(1)}
-                >
-                  <ArrowLeft className="mr-2 size-4" />
-                  Back
-                </Button>
+              <div className="flex justify-center">
+                <div className="flex justify-end gap-6">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setStep(1)}
+                  >
+                    <ArrowLeft className="mr-2 size-4" />
+                    Back
+                  </Button>
 
-                <Button
-                  className="flex-1"
-                  disabled={!canProceedStep2}
-                  onClick={() => setStep(3)}
-                >
-                  Continue
-                  <ArrowRight className="ml-2 size-4" />
-                </Button>
+                  <Button
+                    className="flex-1"
+                    disabled={!canProceedStep2}
+                    onClick={() => setStep(3)}
+                  >
+                    Continue
+                    <ArrowRight className="ml-2 size-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -764,7 +768,7 @@ export default function OnboardingPage() {
               <section className="space-y-3">
                 <div>
                   <h3 className="text-sm font-semibold">Technical skills</h3>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Select the technologies and tools you know.
                   </p>
                 </div>
@@ -799,7 +803,7 @@ export default function OnboardingPage() {
                     items={EXPERIENCE_LEVELS}
                   />
                 </FormField>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Leave this empty if you're open to opportunities at any level.
                 </p>
               </section>
@@ -849,47 +853,49 @@ export default function OnboardingPage() {
                   </FormField>
                 </div>
 
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Optional. Freshers and students can leave this blank.
                 </p>
               </section>
 
               {error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-sm">
                   {error}
                 </div>
               )}
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  disabled={loading}
-                  onClick={() => setStep(2)}
-                >
-                  <ArrowLeft className="mr-2 size-4" />
-                  Back
-                </Button>
+              <div className="flex justify-center">
+                <div className="flex justify-end gap-6">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    disabled={loading}
+                    onClick={() => setStep(2)}
+                  >
+                    <ArrowLeft className="mr-2 size-4" />
+                    Back
+                  </Button>
 
-                <Button className="flex-1" disabled={loading} onClick={save}>
-                  {loading ? (
-                    <>
-                      <Loader className="mr-2 size-4" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      Complete profile
-                      <Check className="ml-2 size-4" />
-                    </>
-                  )}
-                </Button>
+                  <Button className="flex-1" disabled={loading} onClick={save}>
+                    {loading ? (
+                      <>
+                        <Loader className="mr-2 size-4" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        Complete profile
+                        <Check className="ml-2 size-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-center text-xs">
           Your information helps us find relevant opportunities for you.
         </p>
       </div>

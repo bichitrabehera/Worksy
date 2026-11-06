@@ -307,17 +307,6 @@ export default function JobsPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Page heading */}
-        <div className="mb-8">
-          <h1 className="mb-2 font-[copper] text-2xl font-semibold tracking-tight">
-            Jobs
-          </h1>
-
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Discover opportunities matched to your profile
-          </p>
-        </div>
-
         {/* Search and filters */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row">
           <InputGroup>
@@ -335,7 +324,7 @@ export default function JobsPage() {
             />
           </InputGroup>
 
-          <div className="flex gap-2">
+          <div className="flex justify-center gap-2">
             <Select
               value={filters.jobType}
               onValueChange={(value) => {

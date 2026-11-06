@@ -1,123 +1,106 @@
-import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, MoveUpRight } from "lucide-react";
-import { GitHubLight, LinkedIn } from "developer-icons";
+import { GitHubDark, LinkedIn } from "developer-icons";
+
+const footerLinks = [
+  {
+    title: "Explore",
+    links: [
+      { label: "Find jobs", href: "/jobs" },
+      { label: "Saved jobs", href: "/saved" },
+      { label: "My profile", href: "/profile" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Worksy", href: "/about" },
+      { label: "Contact", href: "mailto:bichitrabehera.345@gmail.com" },
+      { label: "Privacy policy", href: "/privacy" },
+    ],
+  },
+];
+
+const socials = [
+  {
+    label: "GitHub",
+    href: "https://github.com/bichitrabehera",
+    Icon: GitHubDark,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://linkedin.com/in/bichitrabehera",
+    Icon: LinkedIn,
+  },
+];
+
+const linkClass =
+  "rounded-sm text-black underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-zinc-800 bg-[#202020] text-white">
-      <div className="mx-auto max-w-5xl px-4 pt-16 pb-8 sm:px-10">
-        {/* Top section */}
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-5">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <div className="flex gap-6">
-              <Link
-                href="/"
-                className="text-brand font-[copper] text-xl font-semibold"
-              >
-                Worksy
-              </Link>
-            </div>
-
-            <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-400">
-              Your next opportunity shouldn't be hard to find. Discover remote
-              jobs, explore new possibilities, and take the next step in your
-              career.
-            </p>
-
-            <a
-              href="mailto:bichitrabehera.345@gmail.com"
-              className="mt-6 inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white"
+    <footer className="overflow-hidden bg-white text-zinc-900">
+      <div className="bg-brand mx-auto my-10 max-w-5xl rounded-br-[50px] rounded-bl-[50px] border-r border-b border-l px-5 sm:px-8">
+        <div className="grid gap-14 py-14 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-20 lg:py-20">
+          <div>
+            <Link
+              href="/"
+              className="font-[copper] text-3xl font-semibold tracking-tight text-white"
             >
-              Get in touch
-            </a>
+              Worksy
+            </Link>
+
+            <h2 className="mt-5 max-w-sm text-3xl leading-tight font-semibold tracking-tight text-balance text-black">
+              Your next opportunity starts here.
+            </h2>
           </div>
 
-          {/* Explore */}
-          <div>
-            <h3 className="text-sm font-semibold">Explore</h3>
-            <ul className="mt-5 space-y-3 text-sm text-zinc-400">
-              <li>
-                <Link href="/jobs" className="transition hover:text-white">
-                  Find jobs
-                </Link>
-              </li>
-              <li>
-                <Link href="/saved" className="transition hover:text-white">
-                  Saved jobs
-                </Link>
-              </li>
-              <li>
-                <Link href="/profile" className="transition hover:text-white">
-                  My profile
-                </Link>
-              </li>
-            </ul>
-          </div>
+          <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]">
+            {footerLinks.map(({ title, links }) => (
+              <nav key={title} aria-label={title}>
+                <h3 className="text-sm font-bold text-black">{title}</h3>
 
-          {/* Company */}
-          <div>
-            <h3 className="text-sm font-semibold">Company</h3>
-            <ul className="mt-5 space-y-3 text-sm text-zinc-400">
-              <li>
-                <Link href="/about" className="transition hover:text-white">
-                  About us
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:bichitrabehera.345@gmail.com"
-                  className="transition hover:text-white"
-                >
-                  Contact
-                </a>
-              </li>
-              <li>
-                <Link href="/privacy" className="transition hover:text-white">
-                  Privacy policy
-                </Link>
-              </li>
-            </ul>
-          </div>
+                <ul className="mt-5 space-y-3.5 text-sm font-medium">
+                  {links.map(({ label, href }) => (
+                    <li key={label}>
+                      <Link href={href} className={linkClass}>
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
 
-          {/* Social */}
-          <div>
-            <h3 className="text-sm font-semibold">Connect</h3>
-            <ul className="mt-5 space-y-3 text-sm text-zinc-400">
-              <li>
-                <a
-                  href="https://github.com/bichitrabehera"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 transition hover:text-white"
-                >
-                  <GitHubLight size={15} />
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://linkedin.com/in/bichitrabehera"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 transition hover:text-white"
-                >
-                  <LinkedIn size={15} />
-                  LinkedIn
-                </a>
-              </li>
-            </ul>
+            <div>
+              <h3 className="text-sm font-bold text-black">Connect</h3>
+
+              <ul className="mt-5 space-y-3.5 text-sm font-medium">
+                {socials.map(({ label, href, Icon }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-2.5 ${linkClass}`}
+                    >
+                      <Icon size={20} />
+                      {label}
+                      <span className="sr-only">(opens in a new tab)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* Bottom section */}
-        <div className="mt-16 flex flex-col gap-4 pt-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-zinc-500">Worksy. All rights reserved.</p>
-
-          <p className="text-xs text-zinc-500">
-            Built to make your next move easier.
-          </p>
+        <div className="flex justify-center overflow-hidden py-8">
+          <h1
+            aria-label="Worksy"
+            className="tracking-3 shrink-0 font-[copper] text-[clamp(5rem,15vw,13rem)] leading-[0.8] whitespace-nowrap text-black select-none"
+          >
+            WORKSY
+          </h1>
         </div>
       </div>
     </footer>
