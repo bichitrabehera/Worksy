@@ -9,7 +9,7 @@ export function matchTone(category?: string) {
     case "Potential Match":
       return "bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400";
     default:
-      return "bg-zinc-500/10 text-zinc-600 ring-zinc-500/20 dark:text-zinc-400";
+      return "bg-muted/10 text-muted-foreground ring-muted/20";
   }
 }
 

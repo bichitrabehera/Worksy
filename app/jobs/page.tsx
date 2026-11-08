@@ -88,6 +88,7 @@ export default function JobsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [sourceJobs, setSourceJobs] = useState<Job[]>([]);
 
   const [profileChecked, setProfileChecked] = useState(false);
@@ -98,12 +99,20 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 16;
+  const pageSize = 12;
 
   const [filters, setFilters] = useState({
     jobType: "",
     workMode: "",
   });
+
+  // Debounce search input so typing doesn't refetch on every keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Tracks whether the user changed the saved list while the initial API sync
   // was in flight, so a stale response cannot resurrect a removed bookmark.
@@ -184,7 +193,7 @@ export default function JobsPage() {
           profile,
           page,
           pageSize,
-          searchQuery,
+          debouncedSearchQuery,
           filters,
         );
         const cached = sessionStorage.getItem(cacheKey);
@@ -212,7 +221,7 @@ export default function JobsPage() {
           page: String(page),
           limit: String(pageSize),
         });
-        if (searchQuery.trim()) params.set("q", searchQuery.trim());
+        if (debouncedSearchQuery.trim()) params.set("q", debouncedSearchQuery.trim());
         if (filters.jobType) params.set("jobType", filters.jobType);
         if (filters.workMode) params.set("workMode", filters.workMode);
 
@@ -262,7 +271,7 @@ export default function JobsPage() {
     page,
     isUserLoaded,
     user?.id,
-    searchQuery,
+    debouncedSearchQuery,
     filters,
   ]);
 
@@ -305,13 +314,13 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
+    <div className="bg-background min-h-[calc(100vh-4rem)]">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Search and filters */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row">
           <InputGroup>
             <InputGroupAddon>
-              <Search className="h-4 w-4 text-zinc-400" />
+              <Search className="text-muted-foreground h-4 w-4" />
             </InputGroupAddon>
 
             <InputGroupInput
@@ -335,7 +344,7 @@ export default function JobsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-black">
+              <SelectTrigger className="border-border bg-background h-10 min-w-[130px] text-sm">
                 <SelectValue placeholder="Job type" />
               </SelectTrigger>
 
@@ -360,7 +369,7 @@ export default function JobsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-10 min-w-[130px] border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-black">
+              <SelectTrigger className="border-border bg-background h-10 min-w-[130px] text-sm">
                 <SelectValue placeholder="Work mode" />
               </SelectTrigger>
 
@@ -377,7 +386,7 @@ export default function JobsPage() {
         </div>
 
         {!jobsLoading && !jobsError && (
-          <p className="mb-4 text-xs text-zinc-500">
+          <p className="text-muted-foreground mb-4 text-xs">
             {totalCount} opportunities available
             {totalCount > 0 && (
               <>
@@ -391,10 +400,10 @@ export default function JobsPage() {
         {/* Job listings */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {jobsLoading && (
-            <Card className="col-span-full border-zinc-200 dark:border-zinc-800">
+            <Card className="border-border col-span-full">
               <CardContent className="p-12 text-center">
                 <Loader className="mx-auto" />
-                <p className="mt-3 text-sm text-zinc-500">
+                <p className="text-muted-foreground mt-3 text-sm">
                   Finding jobs matching your preferences...
                 </p>
               </CardContent>
@@ -402,9 +411,9 @@ export default function JobsPage() {
           )}
 
           {!jobsLoading && jobsError && (
-            <Card className="col-span-full border-zinc-200 dark:border-zinc-800">
+            <Card className="border-border col-span-full">
               <CardContent className="p-12 text-center">
-                <p className="text-sm text-zinc-500">{jobsError}</p>
+                <p className="text-muted-foreground text-sm">{jobsError}</p>
 
                 <Button
                   variant="outline"
@@ -421,13 +430,13 @@ export default function JobsPage() {
           )}
 
           {!jobsLoading && !jobsError && jobs.length === 0 && (
-            <Card className="col-span-full border-zinc-200 dark:border-zinc-800">
+            <Card className="border-border col-span-full">
               <CardContent className="p-12 text-center">
-                <p className="text-zinc-600 dark:text-zinc-400">
+                <p className="text-muted-foreground">
                   No jobs found matching your preferences.
                 </p>
 
-                <p className="mt-2 text-xs text-zinc-500">
+                <p className="text-muted-foreground mt-2 text-xs">
                   Try changing your search or filters.
                 </p>
               </CardContent>
@@ -457,7 +466,7 @@ export default function JobsPage() {
                       openJob(job);
                     }
                   }}
-                  className="group focus-visible:ring-brand/40 relative flex h-full cursor-pointer flex-col border-zinc-200 focus-visible:ring-2 focus-visible:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
+                  className="group focus-visible:ring-brand/40 border-border dark:border-border dark:hover:border-border relative flex h-full cursor-pointer flex-col focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <CardContent className="flex flex-1 flex-col gap-4 px-5">
                     <div className="flex items-start gap-3">
@@ -498,45 +507,21 @@ export default function JobsPage() {
                           {job.location.join(", ") || "Not specified"}
                         </span>
                       </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Briefcase className="size-3.5 shrink-0" />
-                        {job.jobType || "Not specified"}
-                      </span>
+
                       <span className="inline-flex items-center gap-1">
                         <Laptop className="size-3.5 shrink-0" />
                         {job.workMode}
                       </span>
                     </div>
 
-                    <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed">
-                      {job.description}
+                    <p className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-medium">
+                      <Banknote className="text-muted-foreground size-3.5" />
+                      {salary ? salary : "Not specified"}
                     </p>
-
-                    {reasons.length > 0 && (
-                      <ul className="space-y-1">
-                        {reasons.slice(0, 2).map((reason) => (
-                          <li
-                            key={reason}
-                            className="text-muted-foreground flex items-start gap-1.5 text-[11px]"
-                          >
-                            <CheckCircle2 className="mt-px size-3 shrink-0 text-emerald-500" />
-                            <span className="line-clamp-1">{reason}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    {salary && (
-                      <p className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300">
-                        <Banknote className="text-muted-foreground size-3.5" />
-                        {salary}
-                      </p>
-                    )}
 
                     <div className="border-border/70 mt-auto flex items-center justify-between gap-2 pt-3">
                       <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs">
                         {sourceLogos[job.source] && (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={sourceLogos[job.source]}
                             alt=""

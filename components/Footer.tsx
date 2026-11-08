@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { GitHubDark, LinkedIn, XDark } from "developer-icons";
+import WorksyTitle from "./ui/worksy_title";
 
 const footerLinks = [
   {
@@ -38,11 +39,11 @@ const linkClass =
 
 const Footer = () => {
   return (
-    <footer className="overflow-hidden border-t py-10 bg-white">
+    <footer className="bg-background overflow-hidden border-t py-10">
       <div className="relative mx-auto flex w-full max-w-5xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:py-16">
           <div>
-            <h2 className="max-w-sm text-3xl leading-tight font-semibold tracking-tight text-balance text-black">
+            <h2 className="text-foreground max-w-sm text-3xl leading-tight font-semibold tracking-tight text-balance">
               Your next opportunity starts here.
             </h2>
           </div>
@@ -50,9 +51,9 @@ const Footer = () => {
           <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-3">
             {footerLinks.map(({ title, links }) => (
               <nav key={title} aria-label={title}>
-                <h3 className="text text-black">{title}</h3>
+                <h3 className="text-foreground">{title}</h3>
 
-                <ul className="mt-4 space-y-3 text-sm text-black/50">
+                <ul className="text-muted-foreground mt-4 space-y-3 text-sm">
                   {links.map(({ label, href }) => (
                     <li key={label}>
                       <Link href={href} className={linkClass}>
@@ -65,7 +66,7 @@ const Footer = () => {
             ))}
 
             <div>
-              <h3 className="text text-black">Connect</h3>
+              <h3 className="text-foreground">Connect</h3>
 
               <ul className="mt-4 space-y-3 text-sm">
                 {socials.map(({ label, href, Icon }) => (
@@ -74,7 +75,7 @@ const Footer = () => {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-2.5 text-black/50 ${linkClass}`}
+                      className={`text-muted-foreground inline-flex items-center gap-2.5 ${linkClass}`}
                     >
                       <Icon size={20} />
                       {label}
@@ -88,12 +89,7 @@ const Footer = () => {
         </div>
 
         <div className="flex justify-center overflow-hidden py-4">
-          <h1
-            aria-label="Worksy"
-            className="tracking-3 text-brand/10 shrink-0 font-[copper] text-[clamp(5rem,15vw,13rem)] leading-[0.8] whitespace-nowrap select-none"
-          >
-            WORKSY
-          </h1>
+          <WorksyTitle />
         </div>
       </div>
     </footer>

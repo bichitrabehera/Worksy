@@ -200,7 +200,7 @@ export default function ProfilePage() {
           ...profile,
           fieldOfStudy: profile.major || profile.fieldOfStudy,
           qualification: profile.qualification,
-          onboardingCompleted: true,
+          onboardingCompleted: profile.onboardingCompleted ?? false,
         }),
       });
 

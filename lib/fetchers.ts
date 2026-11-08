@@ -42,7 +42,7 @@ const asUrl = (value: unknown): string | undefined => {
   }
 };
 
-const isIndiaEligible = (location = "") => {
+export const isIndiaEligible = (location = "") => {
   const value = location.toLowerCase();
 
   return (
@@ -272,7 +272,7 @@ export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
   while (allJobs.length < limit) {
     const url = new URL("https://jobicy.com/api/jobs");
 
-    url.searchParams.set("count", "200");
+    url.searchParams.set("count", String(Math.min(limit, 200)));
 
     if (
       query.q &&

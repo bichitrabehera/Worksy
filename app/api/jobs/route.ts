@@ -4,8 +4,8 @@ import { connection } from "next/server";
 
 import { DEFAULT_JOB_QUERY, getUserJobsPage } from "@/lib/jobs-service";
 
-const DEFAULT_PAGE_SIZE = 20;
-const MAX_PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 12;
+const MAX_PAGE_SIZE = 24;
 const MAX_SEARCH_LENGTH = 120;
 
 function parsePositiveInt(value: string | null, fallback: number) {

@@ -10,12 +10,17 @@ export async function DELETE() {
     }
 
     const client = await clerkClient();
-    await client.users.deleteUser(userId);
 
+    // Remove local application data first. Clerk and the application database
+    // cannot be deleted atomically, so the database is cleaned up before
+    // revoking the Clerk identity: if Clerk deletion fails, the user can still
+    // sign in and retry instead of being locked out of an empty account.
     const user = await prisma.user.findUnique({ where: { clerkId: userId } });
     if (user) {
       await prisma.user.delete({ where: { id: user.id } });
     }
+
+    await client.users.deleteUser(userId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -58,10 +58,10 @@ export default function MyJobsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
+    <div className="min-h-[calc(100vh-4rem)] bg-background">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-muted-foreground">
             Jobs you&apos;ve saved for later. Saved jobs expire after 30 days.
           </p>
         </div>
@@ -80,10 +80,10 @@ export default function MyJobsPage() {
         )}
 
         {!loading && !error && savedJobs.length === 0 && (
-          <Card className="border-zinc-200 dark:border-zinc-800">
+          <Card className="border-border">
             <CardContent className="p-12 text-center">
-              <Bookmark className="mx-auto mb-3 h-8 w-8 text-zinc-400" />
-              <p className="mb-4 text-zinc-600 dark:text-zinc-400">
+              <Bookmark className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+              <p className="mb-4 text-muted-foreground">
                 No saved jobs yet
               </p>
               <Button
@@ -101,7 +101,7 @@ export default function MyJobsPage() {
             {savedJobs.map((job) => (
               <Card
                 key={job.id}
-                className="border-zinc-200 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+                className="border-border transition-colors hover:border-border dark:border-border dark:hover:border-border"
               >
                 <CardContent className="px-5">
                   <h3 className="mb-1 text-base font-medium">{job.title}</h3>
@@ -115,11 +115,11 @@ export default function MyJobsPage() {
                       {job.company}
                     </a>
                   ) : (
-                    <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    <p className="mb-2 text-sm text-muted-foreground">
                       {job.company}
                     </p>
                   )}
-                  <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                  <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span>{job.location.join(", ")}</span>
                     <span>·</span>
                     <span>{job.jobType || "Not specified"}</span>

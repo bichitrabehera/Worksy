@@ -25,7 +25,7 @@ function AlertDialogContent({
 }: AlertDialogPrimitive.Popup.Props) {
   return (
     <AlertDialogPrimitive.Portal>
-      <AlertDialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
+      <AlertDialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
       <AlertDialogPrimitive.Viewport className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <AlertDialogPrimitive.Popup
           className={cn(

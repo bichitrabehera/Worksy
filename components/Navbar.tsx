@@ -7,6 +7,7 @@ import { Bookmark, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { GlobalCommandMenu } from "@/components/global-command-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,7 +46,7 @@ export default function Navbar() {
   );
 
   return (
-    <header className="border-border/60 border-b bg-background/80 sticky top-0 z-50 backdrop-blur-xl">
+    <header className="border-border/60 bg-background/80 sticky top-0 z-50 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link
@@ -58,6 +59,7 @@ export default function Navbar() {
         {/* Search + Account */}
         <div className="flex items-center gap-2 sm:gap-3">
           <GlobalCommandMenu />
+          <ThemeToggle />
 
           {!isLoaded ? (
             <Loader className="size-8" />

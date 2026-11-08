@@ -6,6 +6,7 @@ import {
   fetchRemotive,
 } from "./fetchers";
 import { dedupeJobs } from "./filters";
+import { isIndiaEligible } from "./fetchers";
 import { truncateDescription } from "./job-display";
 import { scoreJob } from "./matching";
 import type { JobPreferences } from "./matching";
@@ -28,7 +29,13 @@ const FEED_TTL_SECONDS = 45 * 60;
 // Upper bound on how many listings one provider may contribute to the pool.
 // Without this, cold requests walk the entire Himalayas/Jobicy pagination chains.
 const MAX_JOBS_PER_PROVIDER =
-  Number(process.env.JOB_FETCH_MAX_PER_PROVIDER) || 200;
+  Number(process.env.JOB_FETCH_MAX_PER_PROVIDER) || 40;
+
+// Once the pool has enough India-eligible remote jobs we stop asking the
+// remaining providers. The first two fast sources (Remotive, Remote OK) usually
+// satisfy this, so the slow paginating ones (Himalayas, Jobicy) are skipped on
+// most cold builds.
+const MIN_POOL_SIZE = 60;
 
 // Feed entries carry previews instead of full descriptions so a page request
 // never downloads the whole job corpus from Redis.
@@ -94,7 +101,9 @@ export type JobsPageOptions = {
 export function getPoolCacheKey(query: JobQuery = DEFAULT_JOB_QUERY) {
   return `jobs:${CACHE_VERSION}:pool:${encodeURIComponent(
     query.where,
-  )}:${encodeURIComponent(query.q || "all")}`;
+  )}:${encodeURIComponent(query.remoteOnly ? "remote" : "all")}:${encodeURIComponent(
+    query.q || "all",
+  )}`;
 }
 
 export function getFeedCacheKey(
@@ -167,37 +176,53 @@ async function fetchJobPool(query: JobQuery): Promise<CachedPool> {
     { name: "Jobicy", fetch: () => fetchJobicy(query) },
   ];
 
-  const results = await Promise.allSettled(
-    providers.map((provider) => provider.fetch()),
-  );
-
   const errors: string[] = [];
+  const allJobs: Job[] = [];
+  const seenProviderNames = new Set<string>();
 
-  const jobs = results.flatMap((result, index) => {
-    if (result.status === "fulfilled") {
-      if (result.value.length === 0) {
-        errors.push(`${providers[index].name}: returned no jobs`);
+  // Fetch providers in order, stopping early once we have enough jobs. The
+  // first two fast sources usually satisfy MIN_POOL_SIZE, so the slow
+  // paginating providers are skipped on most cold builds.
+  for (const provider of providers) {
+    if (allJobs.length >= MIN_POOL_SIZE) break;
+
+    try {
+      const jobs = await provider.fetch();
+      seenProviderNames.add(provider.name);
+
+      if (jobs.length === 0) {
+        errors.push(`${provider.name}: returned no jobs`);
       }
 
-      return result.value;
+      allJobs.push(...jobs);
+    } catch (error) {
+      const reason =
+        error instanceof Error ? error.message : "Unknown error";
+      errors.push(`${provider.name}: ${reason}`);
     }
+  }
 
-    const reason =
-      result.reason instanceof Error ? result.reason.message : "Unknown error";
+  const deduped = dedupeJobs(allJobs);
 
-    errors.push(`${providers[index].name}: ${reason}`);
-
-    return [];
-  });
+  // Honor the query's India/remote focus instead of returning every listing
+  // from every provider.
+  const filteredJobs = query.where === "India"
+    ? deduped.filter((job) => isIndiaEligible(job.location.join(" ")))
+    : deduped;
+  const jobsToCache = query.remoteOnly
+    ? filteredJobs.filter((job) => job.workMode === "Remote")
+    : filteredJobs;
 
   return {
-    jobs: dedupeJobs(jobs),
-    sources: providers.map((provider, index) => ({
-      name: provider.name,
-      success: results[index].status === "fulfilled",
-      count:
-        results[index].status === "fulfilled" ? results[index].value.length : 0,
-    })),
+    jobs: jobsToCache,
+    sources: providers.map((provider) => {
+      const fetchedJobs = allJobs.filter((job) => job.source === provider.name);
+      return {
+        name: provider.name,
+        success: seenProviderNames.has(provider.name),
+        count: fetchedJobs.length,
+      };
+    }),
     errors,
     fetchedAt: Date.now(),
   };
@@ -367,8 +392,10 @@ export async function getUserJobsPage(
   return paginateFeed(feed, options);
 }
 
-// Look up one job for the detail route. The ranked feed proves the job belongs
-// to this user's matches; the pool supplies the untruncated description.
+// Look up one job for the detail route. The pool holds every provider job, so
+// a job found through search or a filter (which may not be in this user's
+// default personalized feed) can still be opened; we score it on the fly in
+// that case instead of returning 404 for a job that exists.
 export async function getUserJob(
   userId: string,
   jobId: string,
@@ -377,12 +404,15 @@ export async function getUserJob(
   const feed = await getUserFeed(userId, query);
   const rankedJob = feed.jobs.find((job) => job.id === jobId);
 
-  if (!rankedJob) return null;
-
   const pool = await getJobPool(query);
   const fullJob = pool.jobs.find((job) => job.id === jobId);
 
-  if (!fullJob) return rankedJob;
+  if (!fullJob) return rankedJob ?? null;
 
-  return { ...fullJob, match: rankedJob.match };
+  const profile = await getProfilePreferences(userId);
+
+  return {
+    ...fullJob,
+    match: rankedJob?.match ?? scoreJob(fullJob, profile),
+  };
 }

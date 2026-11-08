@@ -8,7 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-brand bg-gradient-to-b from-brand/80 via-brand to-brand text-primary-foreground shadow-[inset_0_2px_1px_rgba(255,255,255,0.15),inset_0_-1px_1px_rgba(0,0,0,0)] hover:brightness-105 active:translate-y-px focus-visible:ring-3 focus-visible:ring-brand/40 focus-visible:ring-offset-2",
+          "border-2 border-border bg-gradient-to-b from-brand/80 via-brand to-brand text-primary-foreground shadow-[inset_0_2px_1px_rgba(255,255,255,0.15),inset_0_-1px_1px_rgba(0,0,0,0)] hover:brightness-105 active:translate-y-px focus-visible:ring-3 focus-visible:ring-brand/40 focus-visible:ring-offset-2",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:

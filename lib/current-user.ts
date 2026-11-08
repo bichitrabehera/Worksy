@@ -70,6 +70,7 @@ export async function getAuthenticatedUser() {
     firstName: clerkUser.firstName,
     lastName: clerkUser.lastName,
     imageUrl: clerkUser.imageUrl,
+    authProvider: clerkUser.externalAccounts?.length > 0 ? "oauth" : "email",
   };
 
   const userByEmail = await prisma.user.findUnique({ where: { email } });
@@ -83,10 +84,7 @@ export async function getAuthenticatedUser() {
   } else {
     try {
       user = await prisma.user.create({
-        data: {
-          ...userData,
-          authProvider: "google",
-        },
+        data: userData,
       });
     } catch (error) {
       if (!isUniqueConstraintError(error)) throw error;

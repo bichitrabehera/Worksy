@@ -26,14 +26,14 @@ export type JobMatch = {
   };
 };
 
-const WEIGHTS = {
+const WEIGHTS: Record<string, number> = {
   roles: 30,
   skills: 25,
   location: 15,
   workMode: 10,
   jobType: 10,
   experience: 10,
-} as const;
+};
 
 const ROLE_ALIASES: Record<string, string[]> = {
   "full stack developer": ["software engineer", "frontend developer", "backend developer", "web developer"],
@@ -151,16 +151,20 @@ export function scoreJob(job: Job, profile?: JobPreferences | null): JobMatch {
   const modes = asStrings(profile?.workMode);
   const types = asStrings(profile?.jobTypes ?? profile?.jobTypePreference);
   const experience = asStrings(profile?.preferredExperienceLevel ?? profile?.experienceLevel);
-  const available = [
-    roles.length > 0,
-    skills.length > 0,
-    locations.length > 0,
-    modes.length > 0,
-    types.length > 0,
-    experience.length > 0,
-  ];
-  const totalWeight = available.reduce((sum, present, index) =>
-    sum + (present ? Object.values(WEIGHTS)[index] : 0), 0);
+  // Presence is tracked per preference key, not by array position, so reordering
+  // WEIGHTS can never silently apply a weight to the wrong preference.
+  const present: Record<string, boolean> = {
+    roles: roles.length > 0,
+    skills: skills.length > 0,
+    location: locations.length > 0,
+    workMode: modes.length > 0,
+    jobType: types.length > 0,
+    experience: experience.length > 0,
+  };
+  const totalWeight = Object.entries(present).reduce(
+    (sum, [key, ok]) => sum + (ok ? WEIGHTS[key] : 0),
+    0,
+  );
 
   const values = {
     roles: roleScore(roles, job),
@@ -170,10 +174,11 @@ export function scoreJob(job: Job, profile?: JobPreferences | null): JobMatch {
     jobType: jobTypeScore(types, job),
     experience: experienceScore(experience, job),
   };
-  const weighted = Object.entries(values).reduce((sum, [key, value]) => {
-    const weight = WEIGHTS[key as keyof typeof WEIGHTS];
-    return sum + (available[Object.keys(WEIGHTS).indexOf(key)] ? value * weight : 0);
-  }, 0);
+  const weighted = Object.entries(values).reduce(
+    (sum, [key, value]) =>
+      sum + (present[key] ? value * WEIGHTS[key] : 0),
+    0,
+  );
   const score = totalWeight ? Math.round(weighted / totalWeight) : 0;
   const reasons: string[] = [];
   if (values.roles >= 80 && roles[0]) reasons.push(`Matches your ${roles[0]} preference.`);

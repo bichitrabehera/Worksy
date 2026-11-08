@@ -37,21 +37,21 @@ const Home = () => {
   const { user, isLoaded } = useUser();
 
   return (
-    <div className="relative overflow-hidden bg-white dark:bg-zinc-950">
+    <div className="relative overflow-hidden bg-background">
       <div className="relative mx-auto flex w-full max-w-5xl flex-col px-4 sm:px-6 lg:px-8">
         <main className="flex flex-1 flex-col items-center justify-center py-16">
           <div className="mx-auto max-w-5xl space-y-3 text-center">
-            <div className="my-6 inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white/70 px-3 py-1 text-xs font-medium text-zinc-600 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-400">
+            <div className="my-6 inline-flex items-center gap-2 rounded-md border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur dark:border-border dark:bg-muted/50 dark:text-muted-foreground">
               <Sparkles className="text-brand h-3.5 w-3.5" />
               Personalized recommendations. Less noise.
             </div>
 
-            <h1 className="font-[copper] text-6xl tracking-tight text-balance text-zinc-900 lg:text-7xl dark:text-white">
+            <h1 className="font-[copper] text-6xl tracking-tight text-balance text-foreground dark:text-foreground">
               Find work that{" "}
               <span className="text-brand italic">fits you.</span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-pretty text-zinc-600 dark:text-zinc-400">
+            <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-pretty text-muted-foreground">
               Tell us what you want to do, where you want to work, and what you
               know. We&apos;ll rank opportunities from trusted job sources
               around your preferences.
@@ -88,7 +88,7 @@ const Home = () => {
           {/* Job sources */}
           <div className="my-12 space-y-6">
             <div className="py-3">
-              <h2 className="text-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              <h2 className="text-center text-sm font-medium text-muted-foreground">
                 Job sources
               </h2>
             </div>
@@ -127,7 +127,7 @@ const Home = () => {
                     alt={`${source.name} logo`}
                     className="h-7 w-7 object-contain"
                   />
-                  <span className="font-[copper] text-sm font-semibold tracking-tight text-zinc-700 hover:text-neutral-500 dark:text-zinc-300">
+                  <span className="font-[copper] text-sm font-semibold tracking-tight text-muted-foreground hover:text-muted-foreground">
                     {source.name}
                   </span>
                 </a>
@@ -143,13 +143,13 @@ const Home = () => {
                 return (
                   <div
                     key={item.title}
-                    className="rounded-sm border border-zinc-200 bg-neutral-100 p-6 dark:border-zinc-800"
+                    className="rounded-sm border border-border bg-muted p-6 dark:border-border"
                   >
                     {IconComponent}
                     <h3 className="mb-2 font-[copper] text-base font-medium">
                       {item.title}
                     </h3>
-                    <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
                   </div>

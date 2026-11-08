@@ -54,12 +54,10 @@ function DetailRow({
 
   return (
     <div className="flex items-start gap-2.5">
-      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
       <div className="min-w-0">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </p>
-        <p className="text-sm text-foreground">{value}</p>
+        <p className="text-muted-foreground text-[11px] font-medium">{label}</p>
+        <p className="text-foreground text-sm">{value}</p>
       </div>
     </div>
   );
@@ -202,11 +200,11 @@ function JobDetailContent() {
   const reasons = job?.match?.reasons ?? [];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
+    <div className="bg-background min-h-[calc(100vh-4rem)]">
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/jobs"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
         >
           <ArrowLeft className="size-4" />
           Back to jobs
@@ -216,7 +214,7 @@ function JobDetailContent() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center gap-3 py-24">
               <Loader />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Loading job details...
               </p>
             </CardContent>
@@ -226,7 +224,7 @@ function JobDetailContent() {
         {!loading && error && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-              <p className="text-sm text-muted-foreground">{error}</p>
+              <p className="text-muted-foreground text-sm">{error}</p>
 
               <div className="flex flex-wrap justify-center gap-2">
                 <Button
@@ -252,24 +250,23 @@ function JobDetailContent() {
                 <CardContent className="space-y-5 px-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-4">
-
                       <div className="min-w-0">
-                        <h1 className="text-xl font-semibold leading-snug tracking-tight sm:text-2xl">
+                        <h1 className="text-xl leading-snug font-semibold tracking-tight sm:text-2xl">
                           {job.title}
                         </h1>
 
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="text-muted-foreground mt-1 text-sm">
                           {job.companyUrl ? (
                             <a
                               href={job.companyUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-medium text-foreground underline-offset-4 hover:underline"
+                              className="text-foreground font-medium underline-offset-4 hover:underline"
                             >
                               {job.company}
                             </a>
                           ) : (
-                            <span className="font-medium text-foreground">
+                            <span className="text-foreground font-medium">
                               {job.company}
                             </span>
                           )}
@@ -327,11 +324,11 @@ function JobDetailContent() {
               {/* Full description */}
               <Card>
                 <CardContent className="px-6">
-                  <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <h2 className="text-muted-foreground text-xs font-semibold">
                     About the role
                   </h2>
 
-                  <div className="mt-3 whitespace-pre-line text-sm leading-7 text-foreground/90">
+                  <div className="text-foreground/90 mt-3 text-sm leading-7">
                     {job.description ||
                       "No description provided for this role."}
                   </div>
@@ -341,11 +338,11 @@ function JobDetailContent() {
               {job.requirements && (
                 <Card>
                   <CardContent className="px-6">
-                    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <h2 className="text-muted-foreground text-xs font-semibold">
                       Requirements
                     </h2>
 
-                    <div className="mt-3 whitespace-pre-line text-sm leading-7 text-foreground/90">
+                    <div className="text-foreground/90 mt-3 text-sm leading-7 whitespace-pre-line">
                       {job.requirements}
                     </div>
                   </CardContent>
@@ -363,10 +360,10 @@ function JobDetailContent() {
                       matchTone(job.match?.category),
                     )}
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-wide">
+                    <p className="text-[11px] font-semibold">
                       {job.match?.category ?? "Match"}
                     </p>
-                    <p className="mt-1 text-3xl font-semibold leading-none">
+                    <p className="mt-1 text-3xl leading-none font-semibold">
                       {job.match?.score ?? 0}%
                     </p>
                     <p className="mt-2 text-xs opacity-80">
@@ -376,7 +373,7 @@ function JobDetailContent() {
 
                   {reasons.length > 0 && (
                     <div>
-                      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <h2 className="text-muted-foreground text-xs font-semibold">
                         Why this matches
                       </h2>
 
@@ -384,7 +381,7 @@ function JobDetailContent() {
                         {reasons.map((reason) => (
                           <li
                             key={reason}
-                            className="flex items-start gap-2 text-sm text-foreground/90"
+                            className="text-foreground/90 flex items-start gap-2 text-sm"
                           >
                             <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-500" />
                             <span>{reason}</span>
@@ -394,7 +391,7 @@ function JobDetailContent() {
                     </div>
                   )}
 
-                  <div className="space-y-3 border-t pt-4">
+                  <div className="space-y-3">
                     <DetailRow
                       icon={MapPin}
                       label="Location"
@@ -415,11 +412,7 @@ function JobDetailContent() {
                       label="Experience"
                       value={job.experienceRequired}
                     />
-                    <DetailRow
-                      icon={Banknote}
-                      label="Salary"
-                      value={salary}
-                    />
+                    <DetailRow icon={Banknote} label="Salary" value={salary} />
                     <DetailRow
                       icon={CalendarDays}
                       label="Posted"
@@ -427,7 +420,7 @@ function JobDetailContent() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 border-t pt-4 text-xs text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
                     {sourceLogos[job.source] && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -453,12 +446,12 @@ export default function JobDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-black">
+        <div className="bg-background min-h-[calc(100vh-4rem)]">
           <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
             <Card>
               <CardContent className="flex flex-col items-center justify-center gap-3 py-24">
                 <Loader />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Loading job details...
                 </p>
               </CardContent>
