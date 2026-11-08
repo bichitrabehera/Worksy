@@ -45,7 +45,7 @@ export default function Navbar() {
   );
 
   return (
-    <header className="border-border/60 bg-background/80 sticky top-0 z-50 backdrop-blur-xl">
+    <header className="border-border/60 border-b bg-background/80 sticky top-0 z-50 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link
@@ -54,19 +54,6 @@ export default function Navbar() {
         >
           Worksy
         </Link>
-
-        {/* Desktop navigation */}
-        <nav className="hidden items-center gap-1 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
 
         {/* Search + Account */}
         <div className="flex items-center gap-2 sm:gap-3">

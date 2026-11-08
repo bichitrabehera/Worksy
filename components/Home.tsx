@@ -46,7 +46,7 @@ const Home = () => {
               Personalized recommendations. Less noise.
             </div>
 
-            <h1 className="font-[copper] text-5xl tracking-tight text-balance text-zinc-900 lg:text-7xl dark:text-white">
+            <h1 className="font-[copper] text-6xl tracking-tight text-balance text-zinc-900 lg:text-7xl dark:text-white">
               Find work that{" "}
               <span className="text-brand italic">fits you.</span>
             </h1>
@@ -120,7 +120,7 @@ const Home = () => {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2.5 rounded-lg border p-2 transition-all duration-200 hover:opacity-100 hover:grayscale-0"
+                  className="flex items-center justify-center gap-2.5 rounded-lg border px-2 py-1 transition-all duration-200 hover:opacity-100 hover:grayscale-0"
                 >
                   <img
                     src={source.logo}
