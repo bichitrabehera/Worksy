@@ -5,10 +5,10 @@
 // read only from the database — this script is its single writer.
 //
 // Run locally:       npx tsx scripts/ingest-jobs.ts
-// Run on a schedule: .github/workflows/ingest-jobs.yml (every 6 hours)
+// Run on a schedule: .github/workflows/ingest-jobs.yml (daily)
 //
 // Idempotent: re-running against the same provider data changes nothing.
-// Remotive's API terms advise at most 4 requests per day; a 6-hour schedule
+// Remotive's API terms advise at most 4 requests per day; a daily schedule
 // with one request per provider is exactly that. Remotive listings must link
 // back to their board (we store their `url` as apply_url) and be credited
 // (the `source` field names the board).

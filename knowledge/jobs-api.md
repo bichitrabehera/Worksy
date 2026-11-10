@@ -99,7 +99,7 @@ Saved jobs and shared links store them, so they must never change once written.
 ## Feed design
 
 The `jobs` table in Postgres is the source of truth. A GitHub Actions workflow
-(`ingest-jobs`) fetches all four providers every 6 hours, filters to tech
+(`ingest-jobs`) fetches all four providers daily, filters to tech
 roles, dedupes across boards, and upserts the results — see
 `knowledge/ingestion.md`. Request-time fetching is gone: a page request runs
 one indexed database query and scores the result set in memory.
@@ -126,8 +126,8 @@ key on profile changes.
   listings per run; Remotive's free API currently returns only 12 listings
   per request regardless of filters). Remotive/Remote OK are single-request
   and cheap; caps are constants in `scripts/ingest-jobs.ts`.
-- The feed reflects the last successful ingest (≤ 6 hours old) plus up to the
-  15-minute feed cache. Brand-new postings surface on the next ingest.
+- The feed reflects the last successful ingest (at most a day old) plus up to
+  the 15-minute feed cache. Brand-new postings surface on the next ingest.
 - Cross-board duplicates are merged by normalized `title|company|location`,
   so the same listing appearing on two boards shows once (with both boards
   recorded in `seen_on`). Listings that differ meaningfully stay separate.

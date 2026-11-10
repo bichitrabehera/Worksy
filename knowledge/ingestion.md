@@ -7,7 +7,7 @@ listings. It is written only by the scheduled ingestion script; the API routes
 only read. User requests never touch the job board APIs.
 
 ```
-GitHub Actions (cron, every 6 h)
+GitHub Actions (cron, daily)
   └─ scripts/ingest-jobs.ts
        Remotive        ──┐
        Remote OK       ──┤   parallel, one provider failing never skips the others
@@ -49,11 +49,11 @@ app (Vercel) ── /api/jobs, /api/jobs/[id] ──► SELECT active rows from 
 
 ## Schedule and compliance
 
-- `.github/workflows/ingest-jobs.yml` runs `17 */6 * * *` — every 6 hours at
-  :17 (offset off the top of the hour; GitHub delays/drops top-of-hour
+- `.github/workflows/ingest-jobs.yml` runs `17 0 * * *` — once a day at 00:17
+  UTC (offset off the top of the hour; GitHub delays/drops top-of-hour
   schedules at peak load). Also runnable manually via `workflow_dispatch`.
-- Exactly 4 runs/day, matching Remotive's API guidance ("max 4 times a day"),
-  with one Remotive request per run.
+- One run per day, comfortably within Remotive's API guidance ("max 4 times a
+  day"), with one Remotive request per run.
 - Remotive terms require linking back to their board and crediting them:
   `apply_url` stores their listing URL and `source` names the board. Jobicy
   requires crediting and linking the original job URL similarly.

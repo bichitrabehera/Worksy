@@ -44,7 +44,7 @@ should be treated as historical context.
 - Added provider-specific handling for remote and India-eligible listings.
 - Ingestion moved out of the request path entirely (see
   [Scheduled ingestion](#scheduled-ingestion)): a GitHub Actions workflow
-  fetches all four providers in parallel every 6 hours and upserts them into
+  fetches all four providers in parallel daily and upserts them into
   the Neon Postgres `jobs` table. Every provider is fetched on every run —
   no provider is skipped because others succeeded, and one failing provider
   cannot starve the rest. Provider health is recorded per run in
@@ -73,8 +73,8 @@ should be treated as historical context.
 - [`scripts/ingest-jobs.ts`](../scripts/ingest-jobs.ts) fetches, classifies,
   dedupes, and upserts; it is the only writer of the `jobs` table.
 - [`.github/workflows/ingest-jobs.yml`](../.github/workflows/ingest-jobs.yml)
-  runs it every 6 hours (`17 */6 * * *`, offset off the top of the hour),
-  with `workflow_dispatch` for manual runs, a concurrency guard against
+  runs it daily (`17 0 * * *`, offset off the top of the hour), with
+  `workflow_dispatch` for manual runs, a concurrency guard against
   overlapping runs, and a 15-minute timeout.
 - Cost is $0: the repository is public (unlimited free GitHub Actions
   minutes) and the Neon free tier covers the corpus.
