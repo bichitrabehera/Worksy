@@ -57,7 +57,7 @@ export function GlobalCommandMenu() {
         variant="outline"
         onClick={() => setOpen(true)}
         aria-label="Open search"
-        className="border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted h-9 justify-start gap-2 rounded-xl px-2.5 sm:w-56 sm:px-3 lg:w-64"
+        className="border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted h-9 justify-start gap-2 rounded-full px-2.5 sm:w-56 sm:px-3 md:rounded-xl lg:w-64"
       >
         <Search className="size-4 shrink-0" />
 
@@ -81,7 +81,7 @@ export function GlobalCommandMenu() {
 
             {navigation.map((section, index) => (
               <div key={section.group}>
-                {index > 0 && <CommandSeparator />}
+                {index > 0}
 
                 <CommandGroup heading={section.group}>
                   {section.items.map((item) => (
@@ -89,6 +89,7 @@ export function GlobalCommandMenu() {
                       key={item.href}
                       value={item.label}
                       onSelect={() => navigate(item.href)}
+                      className="my-1"
                     >
                       <item.icon className="size-4" />
                       <span>{item.label}</span>

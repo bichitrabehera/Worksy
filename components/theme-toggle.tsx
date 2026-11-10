@@ -48,7 +48,7 @@ export function ThemeToggle() {
       title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
         // Subtle border + background pulled from globals.css CSS variables.
-        "inline-flex h-8 w-8 items-center justify-center rounded-md",
+        "inline-flex h-9 w-9 items-center justify-center rounded-full",
         "border border-border bg-background/60 backdrop-blur-sm text-foreground",
         "hover:bg-muted hover:text-foreground hover:border-border",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
