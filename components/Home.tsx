@@ -136,7 +136,7 @@ const Home = () => {
           </div>
 
           <section className="py-12">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 mx-6 gap-3 md:grid-cols-3">
               {data.map((item) => {
                 const IconComponent = item.icon;
 
