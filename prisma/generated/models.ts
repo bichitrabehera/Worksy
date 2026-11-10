@@ -11,6 +11,7 @@
 export type * from './models/User'
 export type * from './models/Profile'
 export type * from './models/Job'
+export type * from './models/ProviderRun'
 export type * from './models/JobMatch'
 export type * from './models/UserJobStatus'
 export type * from './models/SavedJob'

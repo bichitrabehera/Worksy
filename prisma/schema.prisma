@@ -99,8 +99,6 @@ model Profile {
     createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
     updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
     @@map("profiles")
 }
 
@@ -108,37 +106,66 @@ model Profile {
 // JOBS
 // --------------------------------------------------
 
+// Source of truth for job listings. Rows are written ONLY by the scheduled
+// ingestion script (scripts/ingest-jobs.ts, run by the ingest-jobs GitHub
+// workflow); the API routes read. See knowledge/ingestion.md.
 model Job {
     id                String @id @default(uuid()) @db.Uuid
     source            String @db.VarChar(50)
     sourceJobId       String @map("source_job_id") @db.VarChar(255)
+
+    // Stable API-facing identifier (e.g. "remotive-123"). Saved jobs and
+    // detail-page links store this value, so it must never change once written.
+    // When two providers list the same job (same dedup key), the first provider
+    // that inserted the row keeps its publicId.
+    publicId          String @unique @map("public_id") @db.VarChar(255)
+
     title             String
     company           String
     companyNormalized String @map("company_normalized") @db.VarChar(255)
+    companyUrl        String? @map("company_url")
 
     location           Json @db.JsonB
     locationNormalized Json @map("location_normalized") @db.JsonB
 
-    description  String
-    requirements String?
+    description         String
+    descriptionPreview  String @map("description_preview")
+    requirements        String?
+    requirementsPreview String? @map("requirements_preview")
+
+    // Compact text (title + requirements + description, capped) used for
+    // match scoring. Kept separate from `description` so the feed query can
+    // score every row without downloading every full posting.
+    matchText String @map("match_text")
 
     jobType            String? @map("job_type") @db.VarChar(50)
     workMode           String? @map("work_mode") @db.VarChar(50)
     experienceRequired String? @map("experience_required") @db.VarChar(100)
 
-    salaryRange String? @map("salary_range") @db.VarChar(100)
-    salaryMin   Int?    @map("salary_min")
-    salaryMax   Int?    @map("salary_max")
+    salaryRange    String? @map("salary_range") @db.VarChar(100)
+    salaryMin      Int?    @map("salary_min")
+    salaryMax      Int?    @map("salary_max")
+    salaryCurrency String? @map("salary_currency") @db.VarChar(50)
+    salaryPeriod   String? @map("salary_period") @db.VarChar(50)
 
     applyUrl           String @map("apply_url")
     applyUrlNormalized String @map("apply_url_normalized")
 
     postedDate DateTime? @map("posted_date") @db.Timestamp(6)
     fetchedAt  DateTime  @default(now()) @map("fetched_at") @db.Timestamp(6)
-    expiresAt  DateTime? @map("expires_at") @db.Timestamp(6)
+
+    // When the job was last present in its provider's feed. Jobs missing from
+    // a feed are flipped to isActive = false by the ingestion script.
+    lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamp(6)
+
+    expiresAt DateTime? @map("expires_at") @db.Timestamp(6)
 
     isActive Boolean @default(true) @map("is_active")
 
+    // Providers that currently list this job, e.g. ["Remotive", "Jobicy"].
+    seenOn Json @default("[]") @map("seen_on") @db.JsonB
+
+    // Cross-source deduplication: normalized company + title + location.
     dedupKey String @unique @map("dedup_key") @db.VarChar(512)
 
     createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
@@ -146,9 +173,36 @@ model Job {
 
     jobMatches  JobMatch[]
     jobStatuses UserJobStatus[]
-    savedBy     SavedJob[]
+    // NOTE: SavedJob intentionally has no relation to Job — saved jobs are
+    // stored in Upstash Redis keyed by publicId, not by Job UUID.
 
+    @@unique([source, sourceJobId], map: "jobs_source_source_job_id_key")
+    @@index([isActive, postedDate(sort: Desc)], map: "jobs_active_posted_date_idx")
+    @@index([isActive, lastSeenAt], map: "jobs_active_last_seen_idx")
     @@map("jobs")
+}
+
+// --------------------------------------------------
+// PROVIDER RUNS
+// --------------------------------------------------
+
+// One row per provider per ingestion run. Powers source health in
+// /api/jobs (`sources`) and makes silent provider outages visible instead of
+// a provider quietly disappearing from the feed.
+model ProviderRun {
+    id            String   @id @default(uuid()) @db.Uuid
+    provider      String   @map("provider") @db.VarChar(50)
+    success       Boolean
+    fetchedCount  Int      @map("fetched_count")
+    keptCount     Int      @map("kept_count")
+    insertedCount Int      @map("inserted_count")
+    updatedCount  Int      @map("updated_count")
+    error         String?
+    durationMs    Int      @map("duration_ms")
+    runAt         DateTime @default(now()) @map("run_at") @db.Timestamp(6)
+
+    @@index([provider, runAt(sort: Desc)], map: "provider_runs_provider_run_at_idx")
+    @@map("provider_runs")
 }
 
 // --------------------------------------------------

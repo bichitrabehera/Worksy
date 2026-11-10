@@ -57,6 +57,11 @@ export type Profile = Prisma.ProfileModel
  */
 export type Job = Prisma.JobModel
 /**
+ * Model ProviderRun
+ * 
+ */
+export type ProviderRun = Prisma.ProviderRunModel
+/**
  * Model JobMatch
  * 
  */

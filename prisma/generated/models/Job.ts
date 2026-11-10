@@ -40,21 +40,29 @@ export type JobMinAggregateOutputType = {
   id: string | null
   source: string | null
   sourceJobId: string | null
+  publicId: string | null
   title: string | null
   company: string | null
   companyNormalized: string | null
+  companyUrl: string | null
   description: string | null
+  descriptionPreview: string | null
   requirements: string | null
+  requirementsPreview: string | null
+  matchText: string | null
   jobType: string | null
   workMode: string | null
   experienceRequired: string | null
   salaryRange: string | null
   salaryMin: number | null
   salaryMax: number | null
+  salaryCurrency: string | null
+  salaryPeriod: string | null
   applyUrl: string | null
   applyUrlNormalized: string | null
   postedDate: Date | null
   fetchedAt: Date | null
+  lastSeenAt: Date | null
   expiresAt: Date | null
   isActive: boolean | null
   dedupKey: string | null
@@ -66,21 +74,29 @@ export type JobMaxAggregateOutputType = {
   id: string | null
   source: string | null
   sourceJobId: string | null
+  publicId: string | null
   title: string | null
   company: string | null
   companyNormalized: string | null
+  companyUrl: string | null
   description: string | null
+  descriptionPreview: string | null
   requirements: string | null
+  requirementsPreview: string | null
+  matchText: string | null
   jobType: string | null
   workMode: string | null
   experienceRequired: string | null
   salaryRange: string | null
   salaryMin: number | null
   salaryMax: number | null
+  salaryCurrency: string | null
+  salaryPeriod: string | null
   applyUrl: string | null
   applyUrlNormalized: string | null
   postedDate: Date | null
   fetchedAt: Date | null
+  lastSeenAt: Date | null
   expiresAt: Date | null
   isActive: boolean | null
   dedupKey: string | null
@@ -92,25 +108,34 @@ export type JobCountAggregateOutputType = {
   id: number
   source: number
   sourceJobId: number
+  publicId: number
   title: number
   company: number
   companyNormalized: number
+  companyUrl: number
   location: number
   locationNormalized: number
   description: number
+  descriptionPreview: number
   requirements: number
+  requirementsPreview: number
+  matchText: number
   jobType: number
   workMode: number
   experienceRequired: number
   salaryRange: number
   salaryMin: number
   salaryMax: number
+  salaryCurrency: number
+  salaryPeriod: number
   applyUrl: number
   applyUrlNormalized: number
   postedDate: number
   fetchedAt: number
+  lastSeenAt: number
   expiresAt: number
   isActive: number
+  seenOn: number
   dedupKey: number
   createdAt: number
   updatedAt: number
@@ -132,21 +157,29 @@ export type JobMinAggregateInputType = {
   id?: true
   source?: true
   sourceJobId?: true
+  publicId?: true
   title?: true
   company?: true
   companyNormalized?: true
+  companyUrl?: true
   description?: true
+  descriptionPreview?: true
   requirements?: true
+  requirementsPreview?: true
+  matchText?: true
   jobType?: true
   workMode?: true
   experienceRequired?: true
   salaryRange?: true
   salaryMin?: true
   salaryMax?: true
+  salaryCurrency?: true
+  salaryPeriod?: true
   applyUrl?: true
   applyUrlNormalized?: true
   postedDate?: true
   fetchedAt?: true
+  lastSeenAt?: true
   expiresAt?: true
   isActive?: true
   dedupKey?: true
@@ -158,21 +191,29 @@ export type JobMaxAggregateInputType = {
   id?: true
   source?: true
   sourceJobId?: true
+  publicId?: true
   title?: true
   company?: true
   companyNormalized?: true
+  companyUrl?: true
   description?: true
+  descriptionPreview?: true
   requirements?: true
+  requirementsPreview?: true
+  matchText?: true
   jobType?: true
   workMode?: true
   experienceRequired?: true
   salaryRange?: true
   salaryMin?: true
   salaryMax?: true
+  salaryCurrency?: true
+  salaryPeriod?: true
   applyUrl?: true
   applyUrlNormalized?: true
   postedDate?: true
   fetchedAt?: true
+  lastSeenAt?: true
   expiresAt?: true
   isActive?: true
   dedupKey?: true
@@ -184,25 +225,34 @@ export type JobCountAggregateInputType = {
   id?: true
   source?: true
   sourceJobId?: true
+  publicId?: true
   title?: true
   company?: true
   companyNormalized?: true
+  companyUrl?: true
   location?: true
   locationNormalized?: true
   description?: true
+  descriptionPreview?: true
   requirements?: true
+  requirementsPreview?: true
+  matchText?: true
   jobType?: true
   workMode?: true
   experienceRequired?: true
   salaryRange?: true
   salaryMin?: true
   salaryMax?: true
+  salaryCurrency?: true
+  salaryPeriod?: true
   applyUrl?: true
   applyUrlNormalized?: true
   postedDate?: true
   fetchedAt?: true
+  lastSeenAt?: true
   expiresAt?: true
   isActive?: true
+  seenOn?: true
   dedupKey?: true
   createdAt?: true
   updatedAt?: true
@@ -299,25 +349,34 @@ export type JobGroupByOutputType = {
   id: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl: string | null
   location: runtime.JsonValue
   locationNormalized: runtime.JsonValue
   description: string
+  descriptionPreview: string
   requirements: string | null
+  requirementsPreview: string | null
+  matchText: string
   jobType: string | null
   workMode: string | null
   experienceRequired: string | null
   salaryRange: string | null
   salaryMin: number | null
   salaryMax: number | null
+  salaryCurrency: string | null
+  salaryPeriod: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate: Date | null
   fetchedAt: Date
+  lastSeenAt: Date
   expiresAt: Date | null
   isActive: boolean
+  seenOn: runtime.JsonValue
   dedupKey: string
   createdAt: Date
   updatedAt: Date
@@ -350,67 +409,85 @@ export type JobWhereInput = {
   id?: Prisma.UuidFilter<"Job"> | string
   source?: Prisma.StringFilter<"Job"> | string
   sourceJobId?: Prisma.StringFilter<"Job"> | string
+  publicId?: Prisma.StringFilter<"Job"> | string
   title?: Prisma.StringFilter<"Job"> | string
   company?: Prisma.StringFilter<"Job"> | string
   companyNormalized?: Prisma.StringFilter<"Job"> | string
+  companyUrl?: Prisma.StringNullableFilter<"Job"> | string | null
   location?: Prisma.JsonFilter<"Job">
   locationNormalized?: Prisma.JsonFilter<"Job">
   description?: Prisma.StringFilter<"Job"> | string
+  descriptionPreview?: Prisma.StringFilter<"Job"> | string
   requirements?: Prisma.StringNullableFilter<"Job"> | string | null
+  requirementsPreview?: Prisma.StringNullableFilter<"Job"> | string | null
+  matchText?: Prisma.StringFilter<"Job"> | string
   jobType?: Prisma.StringNullableFilter<"Job"> | string | null
   workMode?: Prisma.StringNullableFilter<"Job"> | string | null
   experienceRequired?: Prisma.StringNullableFilter<"Job"> | string | null
   salaryRange?: Prisma.StringNullableFilter<"Job"> | string | null
   salaryMin?: Prisma.IntNullableFilter<"Job"> | number | null
   salaryMax?: Prisma.IntNullableFilter<"Job"> | number | null
+  salaryCurrency?: Prisma.StringNullableFilter<"Job"> | string | null
+  salaryPeriod?: Prisma.StringNullableFilter<"Job"> | string | null
   applyUrl?: Prisma.StringFilter<"Job"> | string
   applyUrlNormalized?: Prisma.StringFilter<"Job"> | string
   postedDate?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
   fetchedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
+  lastSeenAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   expiresAt?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
   isActive?: Prisma.BoolFilter<"Job"> | boolean
+  seenOn?: Prisma.JsonFilter<"Job">
   dedupKey?: Prisma.StringFilter<"Job"> | string
   createdAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   jobMatches?: Prisma.JobMatchListRelationFilter
   jobStatuses?: Prisma.UserJobStatusListRelationFilter
-  savedBy?: Prisma.SavedJobListRelationFilter
 }
 
 export type JobOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   source?: Prisma.SortOrder
   sourceJobId?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   company?: Prisma.SortOrder
   companyNormalized?: Prisma.SortOrder
+  companyUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   location?: Prisma.SortOrder
   locationNormalized?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  descriptionPreview?: Prisma.SortOrder
   requirements?: Prisma.SortOrderInput | Prisma.SortOrder
+  requirementsPreview?: Prisma.SortOrderInput | Prisma.SortOrder
+  matchText?: Prisma.SortOrder
   jobType?: Prisma.SortOrderInput | Prisma.SortOrder
   workMode?: Prisma.SortOrderInput | Prisma.SortOrder
   experienceRequired?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryRange?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryMin?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryMax?: Prisma.SortOrderInput | Prisma.SortOrder
+  salaryCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
+  salaryPeriod?: Prisma.SortOrderInput | Prisma.SortOrder
   applyUrl?: Prisma.SortOrder
   applyUrlNormalized?: Prisma.SortOrder
   postedDate?: Prisma.SortOrderInput | Prisma.SortOrder
   fetchedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  seenOn?: Prisma.SortOrder
   dedupKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   jobMatches?: Prisma.JobMatchOrderByRelationAggregateInput
   jobStatuses?: Prisma.UserJobStatusOrderByRelationAggregateInput
-  savedBy?: Prisma.SavedJobOrderByRelationAggregateInput
 }
 
 export type JobWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  publicId?: string
   dedupKey?: string
+  source_sourceJobId?: Prisma.JobSourceSourceJobIdCompoundUniqueInput
   AND?: Prisma.JobWhereInput | Prisma.JobWhereInput[]
   OR?: Prisma.JobWhereInput[]
   NOT?: Prisma.JobWhereInput | Prisma.JobWhereInput[]
@@ -419,52 +496,68 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"Job"> | string
   company?: Prisma.StringFilter<"Job"> | string
   companyNormalized?: Prisma.StringFilter<"Job"> | string
+  companyUrl?: Prisma.StringNullableFilter<"Job"> | string | null
   location?: Prisma.JsonFilter<"Job">
   locationNormalized?: Prisma.JsonFilter<"Job">
   description?: Prisma.StringFilter<"Job"> | string
+  descriptionPreview?: Prisma.StringFilter<"Job"> | string
   requirements?: Prisma.StringNullableFilter<"Job"> | string | null
+  requirementsPreview?: Prisma.StringNullableFilter<"Job"> | string | null
+  matchText?: Prisma.StringFilter<"Job"> | string
   jobType?: Prisma.StringNullableFilter<"Job"> | string | null
   workMode?: Prisma.StringNullableFilter<"Job"> | string | null
   experienceRequired?: Prisma.StringNullableFilter<"Job"> | string | null
   salaryRange?: Prisma.StringNullableFilter<"Job"> | string | null
   salaryMin?: Prisma.IntNullableFilter<"Job"> | number | null
   salaryMax?: Prisma.IntNullableFilter<"Job"> | number | null
+  salaryCurrency?: Prisma.StringNullableFilter<"Job"> | string | null
+  salaryPeriod?: Prisma.StringNullableFilter<"Job"> | string | null
   applyUrl?: Prisma.StringFilter<"Job"> | string
   applyUrlNormalized?: Prisma.StringFilter<"Job"> | string
   postedDate?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
   fetchedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
+  lastSeenAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   expiresAt?: Prisma.DateTimeNullableFilter<"Job"> | Date | string | null
   isActive?: Prisma.BoolFilter<"Job"> | boolean
+  seenOn?: Prisma.JsonFilter<"Job">
   createdAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Job"> | Date | string
   jobMatches?: Prisma.JobMatchListRelationFilter
   jobStatuses?: Prisma.UserJobStatusListRelationFilter
-  savedBy?: Prisma.SavedJobListRelationFilter
-}, "id" | "dedupKey">
+}, "id" | "publicId" | "dedupKey" | "source_sourceJobId">
 
 export type JobOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   source?: Prisma.SortOrder
   sourceJobId?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   company?: Prisma.SortOrder
   companyNormalized?: Prisma.SortOrder
+  companyUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   location?: Prisma.SortOrder
   locationNormalized?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  descriptionPreview?: Prisma.SortOrder
   requirements?: Prisma.SortOrderInput | Prisma.SortOrder
+  requirementsPreview?: Prisma.SortOrderInput | Prisma.SortOrder
+  matchText?: Prisma.SortOrder
   jobType?: Prisma.SortOrderInput | Prisma.SortOrder
   workMode?: Prisma.SortOrderInput | Prisma.SortOrder
   experienceRequired?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryRange?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryMin?: Prisma.SortOrderInput | Prisma.SortOrder
   salaryMax?: Prisma.SortOrderInput | Prisma.SortOrder
+  salaryCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
+  salaryPeriod?: Prisma.SortOrderInput | Prisma.SortOrder
   applyUrl?: Prisma.SortOrder
   applyUrlNormalized?: Prisma.SortOrder
   postedDate?: Prisma.SortOrderInput | Prisma.SortOrder
   fetchedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  seenOn?: Prisma.SortOrder
   dedupKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -482,25 +575,34 @@ export type JobScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"Job"> | string
   source?: Prisma.StringWithAggregatesFilter<"Job"> | string
   sourceJobId?: Prisma.StringWithAggregatesFilter<"Job"> | string
+  publicId?: Prisma.StringWithAggregatesFilter<"Job"> | string
   title?: Prisma.StringWithAggregatesFilter<"Job"> | string
   company?: Prisma.StringWithAggregatesFilter<"Job"> | string
   companyNormalized?: Prisma.StringWithAggregatesFilter<"Job"> | string
+  companyUrl?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   location?: Prisma.JsonWithAggregatesFilter<"Job">
   locationNormalized?: Prisma.JsonWithAggregatesFilter<"Job">
   description?: Prisma.StringWithAggregatesFilter<"Job"> | string
+  descriptionPreview?: Prisma.StringWithAggregatesFilter<"Job"> | string
   requirements?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
+  requirementsPreview?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
+  matchText?: Prisma.StringWithAggregatesFilter<"Job"> | string
   jobType?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   workMode?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   experienceRequired?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   salaryRange?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   salaryMin?: Prisma.IntNullableWithAggregatesFilter<"Job"> | number | null
   salaryMax?: Prisma.IntNullableWithAggregatesFilter<"Job"> | number | null
+  salaryCurrency?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
+  salaryPeriod?: Prisma.StringNullableWithAggregatesFilter<"Job"> | string | null
   applyUrl?: Prisma.StringWithAggregatesFilter<"Job"> | string
   applyUrlNormalized?: Prisma.StringWithAggregatesFilter<"Job"> | string
   postedDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Job"> | Date | string | null
   fetchedAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
+  lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
   expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Job"> | Date | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Job"> | boolean
+  seenOn?: Prisma.JsonWithAggregatesFilter<"Job">
   dedupKey?: Prisma.StringWithAggregatesFilter<"Job"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Job"> | Date | string
@@ -510,149 +612,190 @@ export type JobCreateInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobMatches?: Prisma.JobMatchCreateNestedManyWithoutJobInput
   jobStatuses?: Prisma.UserJobStatusCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobMatches?: Prisma.JobMatchUncheckedCreateNestedManyWithoutJobInput
   jobStatuses?: Prisma.UserJobStatusUncheckedCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobMatches?: Prisma.JobMatchUpdateManyWithoutJobNestedInput
   jobStatuses?: Prisma.UserJobStatusUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobMatches?: Prisma.JobMatchUncheckedUpdateManyWithoutJobNestedInput
   jobStatuses?: Prisma.UserJobStatusUncheckedUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobCreateManyInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -662,25 +805,34 @@ export type JobUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -690,53 +842,76 @@ export type JobUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type JobSourceSourceJobIdCompoundUniqueInput = {
+  source: string
+  sourceJobId: string
 }
 
 export type JobCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   source?: Prisma.SortOrder
   sourceJobId?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   company?: Prisma.SortOrder
   companyNormalized?: Prisma.SortOrder
+  companyUrl?: Prisma.SortOrder
   location?: Prisma.SortOrder
   locationNormalized?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  descriptionPreview?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  requirementsPreview?: Prisma.SortOrder
+  matchText?: Prisma.SortOrder
   jobType?: Prisma.SortOrder
   workMode?: Prisma.SortOrder
   experienceRequired?: Prisma.SortOrder
   salaryRange?: Prisma.SortOrder
   salaryMin?: Prisma.SortOrder
   salaryMax?: Prisma.SortOrder
+  salaryCurrency?: Prisma.SortOrder
+  salaryPeriod?: Prisma.SortOrder
   applyUrl?: Prisma.SortOrder
   applyUrlNormalized?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
   fetchedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  seenOn?: Prisma.SortOrder
   dedupKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -751,21 +926,29 @@ export type JobMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   source?: Prisma.SortOrder
   sourceJobId?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   company?: Prisma.SortOrder
   companyNormalized?: Prisma.SortOrder
+  companyUrl?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  descriptionPreview?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  requirementsPreview?: Prisma.SortOrder
+  matchText?: Prisma.SortOrder
   jobType?: Prisma.SortOrder
   workMode?: Prisma.SortOrder
   experienceRequired?: Prisma.SortOrder
   salaryRange?: Prisma.SortOrder
   salaryMin?: Prisma.SortOrder
   salaryMax?: Prisma.SortOrder
+  salaryCurrency?: Prisma.SortOrder
+  salaryPeriod?: Prisma.SortOrder
   applyUrl?: Prisma.SortOrder
   applyUrlNormalized?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
   fetchedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   dedupKey?: Prisma.SortOrder
@@ -777,21 +960,29 @@ export type JobMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   source?: Prisma.SortOrder
   sourceJobId?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   company?: Prisma.SortOrder
   companyNormalized?: Prisma.SortOrder
+  companyUrl?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  descriptionPreview?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  requirementsPreview?: Prisma.SortOrder
+  matchText?: Prisma.SortOrder
   jobType?: Prisma.SortOrder
   workMode?: Prisma.SortOrder
   experienceRequired?: Prisma.SortOrder
   salaryRange?: Prisma.SortOrder
   salaryMin?: Prisma.SortOrder
   salaryMax?: Prisma.SortOrder
+  salaryCurrency?: Prisma.SortOrder
+  salaryPeriod?: Prisma.SortOrder
   applyUrl?: Prisma.SortOrder
   applyUrlNormalized?: Prisma.SortOrder
   postedDate?: Prisma.SortOrder
   fetchedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   dedupKey?: Prisma.SortOrder
@@ -837,78 +1028,80 @@ export type JobUpdateOneRequiredWithoutJobStatusesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutJobStatusesInput, Prisma.JobUpdateWithoutJobStatusesInput>, Prisma.JobUncheckedUpdateWithoutJobStatusesInput>
 }
 
-export type JobCreateNestedOneWithoutSavedByInput = {
-  create?: Prisma.XOR<Prisma.JobCreateWithoutSavedByInput, Prisma.JobUncheckedCreateWithoutSavedByInput>
-  connectOrCreate?: Prisma.JobCreateOrConnectWithoutSavedByInput
-  connect?: Prisma.JobWhereUniqueInput
-}
-
-export type JobUpdateOneRequiredWithoutSavedByNestedInput = {
-  create?: Prisma.XOR<Prisma.JobCreateWithoutSavedByInput, Prisma.JobUncheckedCreateWithoutSavedByInput>
-  connectOrCreate?: Prisma.JobCreateOrConnectWithoutSavedByInput
-  upsert?: Prisma.JobUpsertWithoutSavedByInput
-  connect?: Prisma.JobWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.JobUpdateToOneWithWhereWithoutSavedByInput, Prisma.JobUpdateWithoutSavedByInput>, Prisma.JobUncheckedUpdateWithoutSavedByInput>
-}
-
 export type JobCreateWithoutJobMatchesInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobStatuses?: Prisma.UserJobStatusCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutJobMatchesInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobStatuses?: Prisma.UserJobStatusUncheckedCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutJobMatchesInput = {
@@ -931,120 +1124,152 @@ export type JobUpdateWithoutJobMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobStatuses?: Prisma.UserJobStatusUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutJobMatchesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobStatuses?: Prisma.UserJobStatusUncheckedUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUncheckedUpdateManyWithoutJobNestedInput
 }
 
 export type JobCreateWithoutJobStatusesInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobMatches?: Prisma.JobMatchCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobCreateNestedManyWithoutJobInput
 }
 
 export type JobUncheckedCreateWithoutJobStatusesInput = {
   id?: string
   source: string
   sourceJobId: string
+  publicId: string
   title: string
   company: string
   companyNormalized: string
+  companyUrl?: string | null
   location: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description: string
+  descriptionPreview: string
   requirements?: string | null
+  requirementsPreview?: string | null
+  matchText: string
   jobType?: string | null
   workMode?: string | null
   experienceRequired?: string | null
   salaryRange?: string | null
   salaryMin?: number | null
   salaryMax?: number | null
+  salaryCurrency?: string | null
+  salaryPeriod?: string | null
   applyUrl: string
   applyUrlNormalized: string
   postedDate?: Date | string | null
   fetchedAt?: Date | string
+  lastSeenAt?: Date | string
   expiresAt?: Date | string | null
   isActive?: boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey: string
   createdAt?: Date | string
   updatedAt?: Date | string
   jobMatches?: Prisma.JobMatchUncheckedCreateNestedManyWithoutJobInput
-  savedBy?: Prisma.SavedJobUncheckedCreateNestedManyWithoutJobInput
 }
 
 export type JobCreateOrConnectWithoutJobStatusesInput = {
@@ -1067,196 +1292,76 @@ export type JobUpdateWithoutJobStatusesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobMatches?: Prisma.JobMatchUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUpdateManyWithoutJobNestedInput
 }
 
 export type JobUncheckedUpdateWithoutJobStatusesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
   sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.StringFieldUpdateOperationsInput | string
   companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
+  companyUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   description?: Prisma.StringFieldUpdateOperationsInput | string
+  descriptionPreview?: Prisma.StringFieldUpdateOperationsInput | string
   requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementsPreview?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  matchText?: Prisma.StringFieldUpdateOperationsInput | string
   jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salaryCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salaryPeriod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
   applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
   postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  seenOn?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobMatches?: Prisma.JobMatchUncheckedUpdateManyWithoutJobNestedInput
-  savedBy?: Prisma.SavedJobUncheckedUpdateManyWithoutJobNestedInput
-}
-
-export type JobCreateWithoutSavedByInput = {
-  id?: string
-  source: string
-  sourceJobId: string
-  title: string
-  company: string
-  companyNormalized: string
-  location: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  description: string
-  requirements?: string | null
-  jobType?: string | null
-  workMode?: string | null
-  experienceRequired?: string | null
-  salaryRange?: string | null
-  salaryMin?: number | null
-  salaryMax?: number | null
-  applyUrl: string
-  applyUrlNormalized: string
-  postedDate?: Date | string | null
-  fetchedAt?: Date | string
-  expiresAt?: Date | string | null
-  isActive?: boolean
-  dedupKey: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  jobMatches?: Prisma.JobMatchCreateNestedManyWithoutJobInput
-  jobStatuses?: Prisma.UserJobStatusCreateNestedManyWithoutJobInput
-}
-
-export type JobUncheckedCreateWithoutSavedByInput = {
-  id?: string
-  source: string
-  sourceJobId: string
-  title: string
-  company: string
-  companyNormalized: string
-  location: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  locationNormalized: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  description: string
-  requirements?: string | null
-  jobType?: string | null
-  workMode?: string | null
-  experienceRequired?: string | null
-  salaryRange?: string | null
-  salaryMin?: number | null
-  salaryMax?: number | null
-  applyUrl: string
-  applyUrlNormalized: string
-  postedDate?: Date | string | null
-  fetchedAt?: Date | string
-  expiresAt?: Date | string | null
-  isActive?: boolean
-  dedupKey: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  jobMatches?: Prisma.JobMatchUncheckedCreateNestedManyWithoutJobInput
-  jobStatuses?: Prisma.UserJobStatusUncheckedCreateNestedManyWithoutJobInput
-}
-
-export type JobCreateOrConnectWithoutSavedByInput = {
-  where: Prisma.JobWhereUniqueInput
-  create: Prisma.XOR<Prisma.JobCreateWithoutSavedByInput, Prisma.JobUncheckedCreateWithoutSavedByInput>
-}
-
-export type JobUpsertWithoutSavedByInput = {
-  update: Prisma.XOR<Prisma.JobUpdateWithoutSavedByInput, Prisma.JobUncheckedUpdateWithoutSavedByInput>
-  create: Prisma.XOR<Prisma.JobCreateWithoutSavedByInput, Prisma.JobUncheckedCreateWithoutSavedByInput>
-  where?: Prisma.JobWhereInput
-}
-
-export type JobUpdateToOneWithWhereWithoutSavedByInput = {
-  where?: Prisma.JobWhereInput
-  data: Prisma.XOR<Prisma.JobUpdateWithoutSavedByInput, Prisma.JobUncheckedUpdateWithoutSavedByInput>
-}
-
-export type JobUpdateWithoutSavedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  company?: Prisma.StringFieldUpdateOperationsInput | string
-  companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
-  location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
-  postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  jobMatches?: Prisma.JobMatchUpdateManyWithoutJobNestedInput
-  jobStatuses?: Prisma.UserJobStatusUpdateManyWithoutJobNestedInput
-}
-
-export type JobUncheckedUpdateWithoutSavedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceJobId?: Prisma.StringFieldUpdateOperationsInput | string
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  company?: Prisma.StringFieldUpdateOperationsInput | string
-  companyNormalized?: Prisma.StringFieldUpdateOperationsInput | string
-  location?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  locationNormalized?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  requirements?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  jobType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workMode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  experienceRequired?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salaryRange?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salaryMin?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  salaryMax?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  applyUrl?: Prisma.StringFieldUpdateOperationsInput | string
-  applyUrlNormalized?: Prisma.StringFieldUpdateOperationsInput | string
-  postedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  fetchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  dedupKey?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  jobMatches?: Prisma.JobMatchUncheckedUpdateManyWithoutJobNestedInput
-  jobStatuses?: Prisma.UserJobStatusUncheckedUpdateManyWithoutJobNestedInput
 }
 
 
@@ -1267,13 +1372,11 @@ export type JobUncheckedUpdateWithoutSavedByInput = {
 export type JobCountOutputType = {
   jobMatches: number
   jobStatuses: number
-  savedBy: number
 }
 
 export type JobCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   jobMatches?: boolean | JobCountOutputTypeCountJobMatchesArgs
   jobStatuses?: boolean | JobCountOutputTypeCountJobStatusesArgs
-  savedBy?: boolean | JobCountOutputTypeCountSavedByArgs
 }
 
 /**
@@ -1300,43 +1403,44 @@ export type JobCountOutputTypeCountJobStatusesArgs<ExtArgs extends runtime.Types
   where?: Prisma.UserJobStatusWhereInput
 }
 
-/**
- * JobCountOutputType without action
- */
-export type JobCountOutputTypeCountSavedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.SavedJobWhereInput
-}
-
 
 export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   source?: boolean
   sourceJobId?: boolean
+  publicId?: boolean
   title?: boolean
   company?: boolean
   companyNormalized?: boolean
+  companyUrl?: boolean
   location?: boolean
   locationNormalized?: boolean
   description?: boolean
+  descriptionPreview?: boolean
   requirements?: boolean
+  requirementsPreview?: boolean
+  matchText?: boolean
   jobType?: boolean
   workMode?: boolean
   experienceRequired?: boolean
   salaryRange?: boolean
   salaryMin?: boolean
   salaryMax?: boolean
+  salaryCurrency?: boolean
+  salaryPeriod?: boolean
   applyUrl?: boolean
   applyUrlNormalized?: boolean
   postedDate?: boolean
   fetchedAt?: boolean
+  lastSeenAt?: boolean
   expiresAt?: boolean
   isActive?: boolean
+  seenOn?: boolean
   dedupKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   jobMatches?: boolean | Prisma.Job$jobMatchesArgs<ExtArgs>
   jobStatuses?: boolean | Prisma.Job$jobStatusesArgs<ExtArgs>
-  savedBy?: boolean | Prisma.Job$savedByArgs<ExtArgs>
   _count?: boolean | Prisma.JobCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["job"]>
 
@@ -1344,25 +1448,34 @@ export type JobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   source?: boolean
   sourceJobId?: boolean
+  publicId?: boolean
   title?: boolean
   company?: boolean
   companyNormalized?: boolean
+  companyUrl?: boolean
   location?: boolean
   locationNormalized?: boolean
   description?: boolean
+  descriptionPreview?: boolean
   requirements?: boolean
+  requirementsPreview?: boolean
+  matchText?: boolean
   jobType?: boolean
   workMode?: boolean
   experienceRequired?: boolean
   salaryRange?: boolean
   salaryMin?: boolean
   salaryMax?: boolean
+  salaryCurrency?: boolean
+  salaryPeriod?: boolean
   applyUrl?: boolean
   applyUrlNormalized?: boolean
   postedDate?: boolean
   fetchedAt?: boolean
+  lastSeenAt?: boolean
   expiresAt?: boolean
   isActive?: boolean
+  seenOn?: boolean
   dedupKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1372,25 +1485,34 @@ export type JobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   id?: boolean
   source?: boolean
   sourceJobId?: boolean
+  publicId?: boolean
   title?: boolean
   company?: boolean
   companyNormalized?: boolean
+  companyUrl?: boolean
   location?: boolean
   locationNormalized?: boolean
   description?: boolean
+  descriptionPreview?: boolean
   requirements?: boolean
+  requirementsPreview?: boolean
+  matchText?: boolean
   jobType?: boolean
   workMode?: boolean
   experienceRequired?: boolean
   salaryRange?: boolean
   salaryMin?: boolean
   salaryMax?: boolean
+  salaryCurrency?: boolean
+  salaryPeriod?: boolean
   applyUrl?: boolean
   applyUrlNormalized?: boolean
   postedDate?: boolean
   fetchedAt?: boolean
+  lastSeenAt?: boolean
   expiresAt?: boolean
   isActive?: boolean
+  seenOn?: boolean
   dedupKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1400,35 +1522,43 @@ export type JobSelectScalar = {
   id?: boolean
   source?: boolean
   sourceJobId?: boolean
+  publicId?: boolean
   title?: boolean
   company?: boolean
   companyNormalized?: boolean
+  companyUrl?: boolean
   location?: boolean
   locationNormalized?: boolean
   description?: boolean
+  descriptionPreview?: boolean
   requirements?: boolean
+  requirementsPreview?: boolean
+  matchText?: boolean
   jobType?: boolean
   workMode?: boolean
   experienceRequired?: boolean
   salaryRange?: boolean
   salaryMin?: boolean
   salaryMax?: boolean
+  salaryCurrency?: boolean
+  salaryPeriod?: boolean
   applyUrl?: boolean
   applyUrlNormalized?: boolean
   postedDate?: boolean
   fetchedAt?: boolean
+  lastSeenAt?: boolean
   expiresAt?: boolean
   isActive?: boolean
+  seenOn?: boolean
   dedupKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "source" | "sourceJobId" | "title" | "company" | "companyNormalized" | "location" | "locationNormalized" | "description" | "requirements" | "jobType" | "workMode" | "experienceRequired" | "salaryRange" | "salaryMin" | "salaryMax" | "applyUrl" | "applyUrlNormalized" | "postedDate" | "fetchedAt" | "expiresAt" | "isActive" | "dedupKey" | "createdAt" | "updatedAt", ExtArgs["result"]["job"]>
+export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "source" | "sourceJobId" | "publicId" | "title" | "company" | "companyNormalized" | "companyUrl" | "location" | "locationNormalized" | "description" | "descriptionPreview" | "requirements" | "requirementsPreview" | "matchText" | "jobType" | "workMode" | "experienceRequired" | "salaryRange" | "salaryMin" | "salaryMax" | "salaryCurrency" | "salaryPeriod" | "applyUrl" | "applyUrlNormalized" | "postedDate" | "fetchedAt" | "lastSeenAt" | "expiresAt" | "isActive" | "seenOn" | "dedupKey" | "createdAt" | "updatedAt", ExtArgs["result"]["job"]>
 export type JobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   jobMatches?: boolean | Prisma.Job$jobMatchesArgs<ExtArgs>
   jobStatuses?: boolean | Prisma.Job$jobStatusesArgs<ExtArgs>
-  savedBy?: boolean | Prisma.Job$savedByArgs<ExtArgs>
   _count?: boolean | Prisma.JobCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type JobIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1439,31 +1569,39 @@ export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   objects: {
     jobMatches: Prisma.$JobMatchPayload<ExtArgs>[]
     jobStatuses: Prisma.$UserJobStatusPayload<ExtArgs>[]
-    savedBy: Prisma.$SavedJobPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     source: string
     sourceJobId: string
+    publicId: string
     title: string
     company: string
     companyNormalized: string
+    companyUrl: string | null
     location: runtime.JsonValue
     locationNormalized: runtime.JsonValue
     description: string
+    descriptionPreview: string
     requirements: string | null
+    requirementsPreview: string | null
+    matchText: string
     jobType: string | null
     workMode: string | null
     experienceRequired: string | null
     salaryRange: string | null
     salaryMin: number | null
     salaryMax: number | null
+    salaryCurrency: string | null
+    salaryPeriod: string | null
     applyUrl: string
     applyUrlNormalized: string
     postedDate: Date | null
     fetchedAt: Date
+    lastSeenAt: Date
     expiresAt: Date | null
     isActive: boolean
+    seenOn: runtime.JsonValue
     dedupKey: string
     createdAt: Date
     updatedAt: Date
@@ -1863,7 +2001,6 @@ export interface Prisma__JobClient<T, Null = never, ExtArgs extends runtime.Type
   readonly [Symbol.toStringTag]: "PrismaPromise"
   jobMatches<T extends Prisma.Job$jobMatchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$jobMatchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobMatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   jobStatuses<T extends Prisma.Job$jobStatusesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$jobStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserJobStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  savedBy<T extends Prisma.Job$savedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Job$savedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1896,25 +2033,34 @@ export interface JobFieldRefs {
   readonly id: Prisma.FieldRef<"Job", 'String'>
   readonly source: Prisma.FieldRef<"Job", 'String'>
   readonly sourceJobId: Prisma.FieldRef<"Job", 'String'>
+  readonly publicId: Prisma.FieldRef<"Job", 'String'>
   readonly title: Prisma.FieldRef<"Job", 'String'>
   readonly company: Prisma.FieldRef<"Job", 'String'>
   readonly companyNormalized: Prisma.FieldRef<"Job", 'String'>
+  readonly companyUrl: Prisma.FieldRef<"Job", 'String'>
   readonly location: Prisma.FieldRef<"Job", 'Json'>
   readonly locationNormalized: Prisma.FieldRef<"Job", 'Json'>
   readonly description: Prisma.FieldRef<"Job", 'String'>
+  readonly descriptionPreview: Prisma.FieldRef<"Job", 'String'>
   readonly requirements: Prisma.FieldRef<"Job", 'String'>
+  readonly requirementsPreview: Prisma.FieldRef<"Job", 'String'>
+  readonly matchText: Prisma.FieldRef<"Job", 'String'>
   readonly jobType: Prisma.FieldRef<"Job", 'String'>
   readonly workMode: Prisma.FieldRef<"Job", 'String'>
   readonly experienceRequired: Prisma.FieldRef<"Job", 'String'>
   readonly salaryRange: Prisma.FieldRef<"Job", 'String'>
   readonly salaryMin: Prisma.FieldRef<"Job", 'Int'>
   readonly salaryMax: Prisma.FieldRef<"Job", 'Int'>
+  readonly salaryCurrency: Prisma.FieldRef<"Job", 'String'>
+  readonly salaryPeriod: Prisma.FieldRef<"Job", 'String'>
   readonly applyUrl: Prisma.FieldRef<"Job", 'String'>
   readonly applyUrlNormalized: Prisma.FieldRef<"Job", 'String'>
   readonly postedDate: Prisma.FieldRef<"Job", 'DateTime'>
   readonly fetchedAt: Prisma.FieldRef<"Job", 'DateTime'>
+  readonly lastSeenAt: Prisma.FieldRef<"Job", 'DateTime'>
   readonly expiresAt: Prisma.FieldRef<"Job", 'DateTime'>
   readonly isActive: Prisma.FieldRef<"Job", 'Boolean'>
+  readonly seenOn: Prisma.FieldRef<"Job", 'Json'>
   readonly dedupKey: Prisma.FieldRef<"Job", 'String'>
   readonly createdAt: Prisma.FieldRef<"Job", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Job", 'DateTime'>
@@ -2356,30 +2502,6 @@ export type Job$jobStatusesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.UserJobStatusScalarFieldEnum | Prisma.UserJobStatusScalarFieldEnum[]
-}
-
-/**
- * Job.savedBy
- */
-export type Job$savedByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the SavedJob
-   */
-  select?: Prisma.SavedJobSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the SavedJob
-   */
-  omit?: Prisma.SavedJobOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.SavedJobInclude<ExtArgs> | null
-  where?: Prisma.SavedJobWhereInput
-  orderBy?: Prisma.SavedJobOrderByWithRelationInput | Prisma.SavedJobOrderByWithRelationInput[]
-  cursor?: Prisma.SavedJobWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.SavedJobScalarFieldEnum | Prisma.SavedJobScalarFieldEnum[]
 }
 
 /**

@@ -57,15 +57,21 @@ const getJobType = (value: unknown): string | undefined => {
   return undefined;
 };
 
-// Keep one provider from stalling a cold request by walking its entire pagination
-// chain. The service asks for a bounded number of listings per provider.
+// Bound the number of listings one provider contributes so paginating
+// providers (Himalayas, Jobicy) can't walk an unbounded pagination chain.
+// The ingestion script (scripts/ingest-jobs.ts) is the only caller.
 const providerLimit = (query: JobQuery) =>
   Math.max(1, Math.floor(query.limit) || 200);
 
 const byNewest = (a: Job, b: Job) =>
   (new Date(b.postedAt).getTime() || 0) - (new Date(a.postedAt).getTime() || 0);
 
-const fetchJson = async (url: URL, cacheSeconds = 3600) => {
+// Only meaningful when a fetcher runs inside a Next.js request (kept for the
+// day a provider is fetched from a route again). Under the ingestion script
+// (plain Node) the `next` option is ignored and every run reads live data.
+const PROVIDER_FETCH_REVALIDATE_SECONDS = 15 * 60;
+
+const fetchJson = async (url: URL, cacheSeconds = PROVIDER_FETCH_REVALIDATE_SECONDS) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12_000);
 
@@ -93,15 +99,24 @@ const fetchJson = async (url: URL, cacheSeconds = 3600) => {
 // REMOTIVE
 // --------------------------------------------------
 
-export async function fetchRemotive(query: JobQuery): Promise<Job[]> {
+export async function fetchRemotive(
+  query: JobQuery,
+  opts: { category?: string } = {},
+): Promise<Job[]> {
   const url = new URL("https://remotive.com/api/remote-jobs");
+
+  // Vertical filter, e.g. "software-dev". See
+  // https://remotive.com/api/remote-jobs/categories for the list.
+  if (opts.category) {
+    url.searchParams.set("category", opts.category);
+  }
 
   if (query.q && query.q.toLowerCase() !== "fresher") {
     url.searchParams.set("search", query.q);
   }
 
   // No limit parameter: Remotive returns all active listings by default.
-  const data = await fetchJson(url, 86400);
+  const data = await fetchJson(url);
 
   return (data.jobs ?? [])
     .map((job: any): Job => ({
@@ -143,7 +158,7 @@ export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
       url.searchParams.set("sort", "recent");
       url.searchParams.set("page", String(page));
 
-      const data = await fetchJson(url, 86400);
+      const data = await fetchJson(url);
       const jobs = data.jobs ?? [];
 
       if (!jobs.length) break;
@@ -170,7 +185,7 @@ export async function fetchHimalayas(query: JobQuery): Promise<Job[]> {
         url.searchParams.set("cursor", cursor);
       }
 
-      const data = await fetchJson(url, 86400);
+      const data = await fetchJson(url);
       const jobs = data.jobs ?? [];
 
       allJobs.push(...jobs);
@@ -226,7 +241,7 @@ export async function fetchRemoteOK(query: JobQuery): Promise<Job[]> {
     url.searchParams.set("tag", query.q.split(/\s+/)[0].toLowerCase());
   }
 
-  const data = await fetchJson(url, 3600);
+  const data = await fetchJson(url);
 
   // Remote OK returns a metadata object before the job records.
   const jobs = Array.isArray(data)
@@ -262,7 +277,10 @@ export async function fetchRemoteOK(query: JobQuery): Promise<Job[]> {
 // JOBICY
 // --------------------------------------------------
 
-export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
+export async function fetchJobicy(
+  query: JobQuery,
+  opts: { industry?: string } = {},
+): Promise<Job[]> {
   const allJobs: any[] = [];
   const seenCursors = new Set<string>();
   const limit = providerLimit(query);
@@ -273,6 +291,12 @@ export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
     const url = new URL("https://jobicy.com/api/jobs");
 
     url.searchParams.set("count", String(Math.min(limit, 200)));
+
+    // Vertical filter, e.g. "engineering" (tech roles live under this
+    // industry). Invalid industry values return 400.
+    if (opts.industry) {
+      url.searchParams.set("industry", opts.industry);
+    };
 
     if (
       query.q &&
@@ -286,7 +310,7 @@ export async function fetchJobicy(query: JobQuery): Promise<Job[]> {
       url.searchParams.set("cursor", cursor);
     }
 
-    const data = await fetchJson(url, 3600);
+    const data = await fetchJson(url);
 
     if (data.success === false) {
       throw new Error(data.error || "Jobicy request failed");

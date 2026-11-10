@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { connection, NextResponse } from "next/server";
 
 import { decodeJobId } from "@/lib/job-id";
-import { DEFAULT_JOB_QUERY, getUserJob } from "@/lib/jobs-service";
+import { getUserJob } from "@/lib/jobs-service";
 
 export async function GET(
   _req: Request,
@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid job id" }, { status: 400 });
     }
 
-    const job = await getUserJob(userId, jobId, DEFAULT_JOB_QUERY);
+    const job = await getUserJob(userId, jobId);
 
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });

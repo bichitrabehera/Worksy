@@ -1,0 +1,57 @@
+# Scheduled job ingestion.
+#
+# Fetches all four job board APIs and upserts the results into the Neon
+# Postgres `jobs` table (see scripts/ingest-jobs.ts). The API routes read only
+# from the database, so user requests never touch these providers.
+#
+# Cost: $0 — this repository is public, and standard GitHub-hosted runners are
+# free with unlimited minutes for public repositories.
+#
+# NOTE: GitHub auto-disables scheduled workflows in repositories with no
+# activity for 60 days. Any commit to this repo re-enables the schedule; if the
+# feed ever looks stale, check the workflow's "Enable workflow" button at
+# https://github.com/bichitrabehera/job-search/actions/workflows/ingest-jobs.yml
+#
+# Required repository secret:
+#   DATABASE_URL — the Neon connection string (same value as .env)
+
+name: Ingest jobs
+
+on:
+  schedule:
+    # Every 6 hours at :17, offset off the top of the hour because GitHub
+    # delays or drops top-of-hour schedules at peak load. This is exactly 4
+    # runs/day, matching Remotive's API guidance of at most 4 requests/day.
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+# Never overlap ingestion runs: concurrent upserts would race and the
+# deactivate pass could mark fresh jobs inactive.
+concurrency:
+  group: ingest-jobs
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The generated Prisma client is committed to the repository, so no
+      # `prisma generate` step is needed here.
+      - name: Run ingestion
+        run: npx tsx scripts/ingest-jobs.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

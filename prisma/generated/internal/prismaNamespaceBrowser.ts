@@ -54,6 +54,7 @@ export const ModelName = {
   User: 'User',
   Profile: 'Profile',
   Job: 'Job',
+  ProviderRun: 'ProviderRun',
   JobMatch: 'JobMatch',
   UserJobStatus: 'UserJobStatus',
   SavedJob: 'SavedJob'
@@ -138,31 +139,56 @@ export const JobScalarFieldEnum = {
   id: 'id',
   source: 'source',
   sourceJobId: 'sourceJobId',
+  publicId: 'publicId',
   title: 'title',
   company: 'company',
   companyNormalized: 'companyNormalized',
+  companyUrl: 'companyUrl',
   location: 'location',
   locationNormalized: 'locationNormalized',
   description: 'description',
+  descriptionPreview: 'descriptionPreview',
   requirements: 'requirements',
+  requirementsPreview: 'requirementsPreview',
+  matchText: 'matchText',
   jobType: 'jobType',
   workMode: 'workMode',
   experienceRequired: 'experienceRequired',
   salaryRange: 'salaryRange',
   salaryMin: 'salaryMin',
   salaryMax: 'salaryMax',
+  salaryCurrency: 'salaryCurrency',
+  salaryPeriod: 'salaryPeriod',
   applyUrl: 'applyUrl',
   applyUrlNormalized: 'applyUrlNormalized',
   postedDate: 'postedDate',
   fetchedAt: 'fetchedAt',
+  lastSeenAt: 'lastSeenAt',
   expiresAt: 'expiresAt',
   isActive: 'isActive',
+  seenOn: 'seenOn',
   dedupKey: 'dedupKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
+
+
+export const ProviderRunScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  success: 'success',
+  fetchedCount: 'fetchedCount',
+  keptCount: 'keptCount',
+  insertedCount: 'insertedCount',
+  updatedCount: 'updatedCount',
+  error: 'error',
+  durationMs: 'durationMs',
+  runAt: 'runAt'
+} as const
+
+export type ProviderRunScalarFieldEnum = (typeof ProviderRunScalarFieldEnum)[keyof typeof ProviderRunScalarFieldEnum]
 
 
 export const JobMatchScalarFieldEnum = {

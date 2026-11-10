@@ -1,46 +1,25 @@
 import redis from "./redis";
-import {
-  fetchHimalayas,
-  fetchJobicy,
-  fetchRemoteOK,
-  fetchRemotive,
-} from "./fetchers";
-import { dedupeJobs } from "./filters";
 import { isIndiaEligible } from "./fetchers";
-import { truncateDescription } from "./job-display";
 import { scoreJob } from "./matching";
 import type { JobPreferences } from "./matching";
 import { prisma } from "./prisma";
 
-import type { Job, JobQuery } from "./types";
+import type { Job, JobQuery, JobSource } from "./types";
 
-// Bump the version whenever the cached payload shape changes. Old keys expire on
-// their own, so a bump never requires a manual flush.
-const CACHE_VERSION = "v3";
+// The jobs table (written by the scheduled ingestion script) is the source of
+// truth. The only cache left is a short-lived per-user copy of the ranked feed
+// so paging stays stable and repeat requests stay fast. Feed entries carry the
+// preview-sized descriptions the ingestion script wrote (360/300 chars, see
+// scripts/ingest-jobs.ts), so a page request only moves the data it renders.
+const FEED_TTL_SECONDS = 15 * 60;
 
-// The provider pool is shared by every user, so its TTL only controls how often
-// the upstream APIs are hit.
-const POOL_TTL_SECONDS = 30 * 60;
+// Bump whenever the cached payload shape changes. v4: DB-backed feed.
+const CACHE_VERSION = "v4";
 
-// A user's ranked feed is much smaller than the pool and is rebuilt whenever it
-// expires or the profile changes.
-const FEED_TTL_SECONDS = 45 * 60;
-
-// Upper bound on how many listings one provider may contribute to the pool.
-// Without this, cold requests walk the entire Himalayas/Jobicy pagination chains.
-const MAX_JOBS_PER_PROVIDER =
-  Number(process.env.JOB_FETCH_MAX_PER_PROVIDER) || 40;
-
-// Once the pool has enough India-eligible remote jobs we stop asking the
-// remaining providers. The first two fast sources (Remotive, Remote OK) usually
-// satisfy this, so the slow paginating ones (Himalayas, Jobicy) are skipped on
-// most cold builds.
-const MIN_POOL_SIZE = 60;
-
-// Feed entries carry previews instead of full descriptions so a page request
-// never downloads the whole job corpus from Redis.
-const DESCRIPTION_PREVIEW_LENGTH = 360;
-const REQUIREMENTS_PREVIEW_LENGTH = 300;
+// The providers the ingestion script fetches, in the same order. Used for the
+// `sources` array so its shape stays stable even before the first ingest run.
+// Keep in sync with PROVIDERS in scripts/ingest-jobs.ts.
+const CANONICAL_PROVIDERS = ["Remotive", "Remote OK", "Himalayas", "Jobicy"];
 
 // The query used by the app today. Exported so the detail route and cache
 // invalidation always agree with the feed route.
@@ -48,20 +27,15 @@ export const DEFAULT_JOB_QUERY: JobQuery = {
   q: "",
   where: "India",
   remoteOnly: true,
-  limit: MAX_JOBS_PER_PROVIDER,
+  limit: 200,
 };
 
 export type ProviderInfo = {
   name: string;
   success: boolean;
+  /** True when the provider was never asked because the pool was already full. */
+  skipped: boolean;
   count: number;
-};
-
-type CachedPool = {
-  jobs: Job[];
-  sources: ProviderInfo[];
-  errors: string[];
-  fetchedAt: number;
 };
 
 type FeedJob = Job & {
@@ -98,21 +72,15 @@ export type JobsPageOptions = {
 // Cache keys
 // --------------------------------------------------
 
-export function getPoolCacheKey(query: JobQuery = DEFAULT_JOB_QUERY) {
-  return `jobs:${CACHE_VERSION}:pool:${encodeURIComponent(
-    query.where,
-  )}:${encodeURIComponent(query.remoteOnly ? "remote" : "all")}:${encodeURIComponent(
-    query.q || "all",
-  )}`;
-}
-
 export function getFeedCacheKey(
   userId: string,
   query: JobQuery = DEFAULT_JOB_QUERY,
 ) {
   return `jobs:${CACHE_VERSION}:user:${userId}:feed:${encodeURIComponent(
     query.where,
-  )}:${encodeURIComponent(query.q || "all")}`;
+  )}:${encodeURIComponent(query.remoteOnly ? "remote" : "all")}:${encodeURIComponent(
+    query.q || "all",
+  )}`;
 }
 
 // --------------------------------------------------
@@ -125,8 +93,8 @@ async function readCache<T>(key: string): Promise<T | null> {
 
     if (!cached) return null;
 
-    // Upstash returns parsed JSON when it can, but older values may still be
-    // strings depending on how they were written.
+    // Upstash returns parsed JSON when it can, but older values may still
+    // be strings depending on how they were written.
     if (typeof cached === "string") {
       return JSON.parse(cached) as T;
     }
@@ -146,8 +114,7 @@ async function writeCache(key: string, data: unknown, ttlSeconds: number) {
   }
 }
 
-// Collapse concurrent builds of the same cache entry into one provider fetch.
-// Two requests for page 1 and page 2 used to trigger two full rebuilds.
+// Collapse concurrent builds of the same cache entry into one database read.
 const inFlight = new Map<string, Promise<unknown>>();
 
 function withInFlight<T>(key: string, work: () => Promise<T>): Promise<T> {
@@ -165,94 +132,7 @@ function withInFlight<T>(key: string, work: () => Promise<T>): Promise<T> {
 }
 
 // --------------------------------------------------
-// Shared provider pool
-// --------------------------------------------------
-
-async function fetchJobPool(query: JobQuery): Promise<CachedPool> {
-  const providers = [
-    { name: "Remotive", fetch: () => fetchRemotive(query) },
-    { name: "Himalayas", fetch: () => fetchHimalayas(query) },
-    { name: "Remote OK", fetch: () => fetchRemoteOK(query) },
-    { name: "Jobicy", fetch: () => fetchJobicy(query) },
-  ];
-
-  const errors: string[] = [];
-  const allJobs: Job[] = [];
-  const seenProviderNames = new Set<string>();
-
-  // Fetch providers in order, stopping early once we have enough jobs. The
-  // first two fast sources usually satisfy MIN_POOL_SIZE, so the slow
-  // paginating providers are skipped on most cold builds.
-  for (const provider of providers) {
-    if (allJobs.length >= MIN_POOL_SIZE) break;
-
-    try {
-      const jobs = await provider.fetch();
-      seenProviderNames.add(provider.name);
-
-      if (jobs.length === 0) {
-        errors.push(`${provider.name}: returned no jobs`);
-      }
-
-      allJobs.push(...jobs);
-    } catch (error) {
-      const reason =
-        error instanceof Error ? error.message : "Unknown error";
-      errors.push(`${provider.name}: ${reason}`);
-    }
-  }
-
-  const deduped = dedupeJobs(allJobs);
-
-  // Honor the query's India/remote focus instead of returning every listing
-  // from every provider.
-  const filteredJobs = query.where === "India"
-    ? deduped.filter((job) => isIndiaEligible(job.location.join(" ")))
-    : deduped;
-  const jobsToCache = query.remoteOnly
-    ? filteredJobs.filter((job) => job.workMode === "Remote")
-    : filteredJobs;
-
-  return {
-    jobs: jobsToCache,
-    sources: providers.map((provider) => {
-      const fetchedJobs = allJobs.filter((job) => job.source === provider.name);
-      return {
-        name: provider.name,
-        success: seenProviderNames.has(provider.name),
-        count: fetchedJobs.length,
-      };
-    }),
-    errors,
-    fetchedAt: Date.now(),
-  };
-}
-
-// Return the shared, unpersonalized job pool. This is the expensive step, so it
-// is cached once for all users instead of once per user.
-export async function getJobPool(
-  query: JobQuery = DEFAULT_JOB_QUERY,
-): Promise<CachedPool> {
-  const cacheKey = getPoolCacheKey(query);
-  const cached = await readCache<CachedPool>(cacheKey);
-
-  if (cached) return cached;
-
-  return withInFlight(cacheKey, async () => {
-    console.log(`Job pool cache MISS: ${query.where}`);
-
-    const pool = await fetchJobPool(query);
-
-    if (pool.jobs.length > 0) {
-      await writeCache(cacheKey, pool, POOL_TTL_SECONDS);
-    }
-
-    return pool;
-  });
-}
-
-// --------------------------------------------------
-// Personalized ranked feed
+// Feed build (database read + scoring)
 // --------------------------------------------------
 
 async function getProfilePreferences(
@@ -286,32 +166,124 @@ function compareFeedJobs(a: FeedJob, b: FeedJob) {
   return a.id.localeCompare(b.id);
 }
 
-function buildFeed(
-  pool: CachedPool,
-  profile: JobPreferences | null,
-): CachedFeed {
-  const jobs = pool.jobs
-    .map((job): FeedJob => ({
-      ...job,
-      description: truncateDescription(
-        job.description,
-        DESCRIPTION_PREVIEW_LENGTH,
-      ),
-      requirements: job.requirements
-        ? truncateDescription(job.requirements, REQUIREMENTS_PREVIEW_LENGTH)
-        : job.requirements,
-      match: scoreJob(job, profile),
-    }))
-    .sort(compareFeedJobs);
+// Latest run per provider. The ingestion script writes one row per provider
+// per run, so this doubles as source health.
+async function getProviderHealth(
+  feedSources: string[],
+): Promise<{ sources: ProviderInfo[]; errors: string[] }> {
+  const latestRuns = await prisma.providerRun.findMany({
+    orderBy: { runAt: "desc" },
+    distinct: ["provider"],
+  });
 
-  return {
-    jobs,
-    sources: pool.sources,
-    errors: pool.errors,
-  };
+  const runsByProvider = new Map(latestRuns.map((run) => [run.provider, run]));
+
+  const sources = CANONICAL_PROVIDERS.map((name) => ({
+    name,
+    success: runsByProvider.get(name)?.success ?? false,
+    // Every provider is now always fetched by the ingestion script.
+    skipped: false,
+    count: feedSources.filter((source) => source === name).length,
+  }));
+
+  const errors: string[] = [];
+
+  for (const run of latestRuns) {
+    if (!run.success) {
+      errors.push(`${run.provider}: ${run.error ?? "last run failed"}`);
+    } else if (run.keptCount === 0) {
+      errors.push(`${run.provider}: returned no jobs`);
+    }
+  }
+
+  return { sources, errors };
 }
 
-// Return the compact, ranked feed for one user. Feed entries are already
+async function buildFeed(
+  query: JobQuery,
+  profile: JobPreferences | null,
+): Promise<CachedFeed> {
+  const rows = await prisma.job.findMany({
+    where: { isActive: true },
+    select: {
+      publicId: true,
+      title: true,
+      company: true,
+      companyUrl: true,
+      location: true,
+      descriptionPreview: true,
+      requirementsPreview: true,
+      matchText: true,
+      jobType: true,
+      workMode: true,
+      experienceRequired: true,
+      salaryMin: true,
+      salaryMax: true,
+      salaryCurrency: true,
+      salaryPeriod: true,
+      applyUrl: true,
+      source: true,
+      postedDate: true,
+    },
+  });
+
+  // Same query semantics the request-time pool used: India-eligible remote
+  // jobs. Location/work-mode filtering still happens here (rather than at
+  // ingest) so the database keeps the full tech corpus for future filters.
+  const eligible = rows.filter((row) => {
+    const location = Array.isArray(row.location)
+      ? (row.location as string[]).join(" ")
+      : "";
+
+    return (
+      (query.where !== "India" || isIndiaEligible(location)) &&
+      (!query.remoteOnly || row.workMode === "Remote")
+    );
+  });
+
+  const jobs = eligible.map((row): FeedJob => {
+    const job: Job = {
+      id: row.publicId,
+      title: row.title,
+      company: row.company,
+      companyUrl: row.companyUrl ?? undefined,
+      location: Array.isArray(row.location) ? (row.location as string[]) : [],
+      description: row.descriptionPreview,
+      requirements: row.requirementsPreview ?? undefined,
+      jobType: row.jobType ?? undefined,
+      workMode: (row.workMode as Job["workMode"]) ?? "Unknown",
+      salaryMin: row.salaryMin ?? undefined,
+      salaryMax: row.salaryMax ?? undefined,
+      salaryCurrency: row.salaryCurrency ?? undefined,
+      salaryPeriod: row.salaryPeriod ?? undefined,
+      url: row.applyUrl,
+      source: row.source as JobSource,
+      postedAt: row.postedDate?.toISOString() ?? "",
+      experienceRequired: row.experienceRequired ?? undefined,
+    };
+
+    // Score against the stored match text (title + requirements + full
+    // description) so skill matches behave like they did when feeds were
+    // scored over full postings, while the feed only carries previews.
+    return {
+      ...job,
+      match: scoreJob(
+        { ...job, description: row.matchText, requirements: undefined },
+        profile,
+      ),
+    };
+  });
+
+  jobs.sort(compareFeedJobs);
+
+  const { sources, errors } = await getProviderHealth(
+    eligible.map((row) => row.source),
+  );
+
+  return { jobs, sources, errors };
+}
+
+// Return the compact, ranked feed for one user. Feed entries are
 // preview-sized, so a page request only moves the data it renders.
 export async function getUserFeed(
   userId: string,
@@ -325,12 +297,8 @@ export async function getUserFeed(
   return withInFlight(cacheKey, async () => {
     console.log(`User feed cache MISS: ${userId}`);
 
-    const [pool, profile] = await Promise.all([
-      getJobPool(query),
-      getProfilePreferences(userId),
-    ]);
-
-    const feed = buildFeed(pool, profile);
+    const profile = await getProfilePreferences(userId);
+    const feed = await buildFeed(query, profile);
 
     if (feed.jobs.length > 0) {
       await writeCache(cacheKey, feed, FEED_TTL_SECONDS);
@@ -341,7 +309,7 @@ export async function getUserFeed(
 }
 
 // Apply search/filters and return a single page. This is pure in-memory work
-// over the compact feed; the full job corpus never leaves Redis here.
+// over the compact feed; the full job corpus never leaves the database here.
 export function paginateFeed(
   feed: CachedFeed,
   options: JobsPageOptions,
@@ -392,27 +360,47 @@ export async function getUserJobsPage(
   return paginateFeed(feed, options);
 }
 
-// Look up one job for the detail route. The pool holds every provider job, so
-// a job found through search or a filter (which may not be in this user's
-// default personalized feed) can still be opened; we score it on the fly in
-// that case instead of returning 404 for a job that exists.
+// Look up one job for the detail route by its public id (e.g. "remotive-123"
+// — the same string encodeJobId/decodeJobId wrap and saved jobs store). Any
+// active job in the database is openable, so jobs found through search or a
+// saved list resolve even when they fall outside the user's default feed.
 export async function getUserJob(
   userId: string,
   jobId: string,
-  query: JobQuery = DEFAULT_JOB_QUERY,
 ): Promise<FeedJob | null> {
-  const feed = await getUserFeed(userId, query);
-  const rankedJob = feed.jobs.find((job) => job.id === jobId);
+  const row = await prisma.job.findUnique({
+    where: { publicId: jobId },
+  });
 
-  const pool = await getJobPool(query);
-  const fullJob = pool.jobs.find((job) => job.id === jobId);
-
-  if (!fullJob) return rankedJob ?? null;
+  if (!row || !row.isActive) return null;
 
   const profile = await getProfilePreferences(userId);
 
+  const job: Job = {
+    id: row.publicId,
+    title: row.title,
+    company: row.company,
+    companyUrl: row.companyUrl ?? undefined,
+    location: Array.isArray(row.location) ? (row.location as string[]) : [],
+    description: row.description,
+    requirements: row.requirements ?? undefined,
+    jobType: row.jobType ?? undefined,
+    workMode: (row.workMode as Job["workMode"]) ?? "Unknown",
+    salaryMin: row.salaryMin ?? undefined,
+    salaryMax: row.salaryMax ?? undefined,
+    salaryCurrency: row.salaryCurrency ?? undefined,
+    salaryPeriod: row.salaryPeriod ?? undefined,
+    url: row.applyUrl,
+    source: row.source as JobSource,
+    postedAt: row.postedDate?.toISOString() ?? "",
+    experienceRequired: row.experienceRequired ?? undefined,
+  };
+
   return {
-    ...fullJob,
-    match: rankedJob?.match ?? scoreJob(fullJob, profile),
+    ...job,
+    match: scoreJob(
+      { ...job, description: row.matchText, requirements: undefined },
+      profile,
+    ),
   };
 }

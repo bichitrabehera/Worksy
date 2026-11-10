@@ -400,6 +400,7 @@ export const ModelName = {
   User: 'User',
   Profile: 'Profile',
   Job: 'Job',
+  ProviderRun: 'ProviderRun',
   JobMatch: 'JobMatch',
   UserJobStatus: 'UserJobStatus',
   SavedJob: 'SavedJob'
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "profile" | "job" | "jobMatch" | "userJobStatus" | "savedJob"
+    modelProps: "user" | "profile" | "job" | "providerRun" | "jobMatch" | "userJobStatus" | "savedJob"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -641,6 +642,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.JobCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.JobCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProviderRun: {
+      payload: Prisma.$ProviderRunPayload<ExtArgs>
+      fields: Prisma.ProviderRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProviderRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProviderRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        findFirst: {
+          args: Prisma.ProviderRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProviderRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        findMany: {
+          args: Prisma.ProviderRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>[]
+        }
+        create: {
+          args: Prisma.ProviderRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        createMany: {
+          args: Prisma.ProviderRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProviderRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>[]
+        }
+        delete: {
+          args: Prisma.ProviderRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        update: {
+          args: Prisma.ProviderRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProviderRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProviderRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProviderRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProviderRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProviderRunPayload>
+        }
+        aggregate: {
+          args: Prisma.ProviderRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProviderRun>
+        }
+        groupBy: {
+          args: Prisma.ProviderRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProviderRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProviderRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProviderRunCountAggregateOutputType> | number
         }
       }
     }
@@ -968,31 +1043,56 @@ export const JobScalarFieldEnum = {
   id: 'id',
   source: 'source',
   sourceJobId: 'sourceJobId',
+  publicId: 'publicId',
   title: 'title',
   company: 'company',
   companyNormalized: 'companyNormalized',
+  companyUrl: 'companyUrl',
   location: 'location',
   locationNormalized: 'locationNormalized',
   description: 'description',
+  descriptionPreview: 'descriptionPreview',
   requirements: 'requirements',
+  requirementsPreview: 'requirementsPreview',
+  matchText: 'matchText',
   jobType: 'jobType',
   workMode: 'workMode',
   experienceRequired: 'experienceRequired',
   salaryRange: 'salaryRange',
   salaryMin: 'salaryMin',
   salaryMax: 'salaryMax',
+  salaryCurrency: 'salaryCurrency',
+  salaryPeriod: 'salaryPeriod',
   applyUrl: 'applyUrl',
   applyUrlNormalized: 'applyUrlNormalized',
   postedDate: 'postedDate',
   fetchedAt: 'fetchedAt',
+  lastSeenAt: 'lastSeenAt',
   expiresAt: 'expiresAt',
   isActive: 'isActive',
+  seenOn: 'seenOn',
   dedupKey: 'dedupKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
+
+
+export const ProviderRunScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  success: 'success',
+  fetchedCount: 'fetchedCount',
+  keptCount: 'keptCount',
+  insertedCount: 'insertedCount',
+  updatedCount: 'updatedCount',
+  error: 'error',
+  durationMs: 'durationMs',
+  runAt: 'runAt'
+} as const
+
+export type ProviderRunScalarFieldEnum = (typeof ProviderRunScalarFieldEnum)[keyof typeof ProviderRunScalarFieldEnum]
 
 
 export const JobMatchScalarFieldEnum = {
@@ -1320,6 +1420,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   profile?: Prisma.ProfileOmit
   job?: Prisma.JobOmit
+  providerRun?: Prisma.ProviderRunOmit
   jobMatch?: Prisma.JobMatchOmit
   userJobStatus?: Prisma.UserJobStatusOmit
   savedJob?: Prisma.SavedJobOmit
